@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "CAPALY",
+    "slug": "capaly-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "capaly",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#233DFF"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.capaly.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "CAPALY needs camera access to attach incident, investigation, CAPA and inspection photos.",
+        "NSPhotoLibraryUsageDescription": "CAPALY needs photo library access to attach images to reports."
+      }
+    },
+    "android": {
+      "package": "com.capaly.mobile",
+      "softwareKeyboardLayoutMode": "resize",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#233DFF"
+      },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-image-picker",
+      "expo-document-picker",
+      [
+        "expo-notifications",
+        {
+          "color": "#233DFF"
+        }
+      ],
+      "expo-asset",
+      "expo-font"
+    ],
+    "extra": {
+      "apiUrl": "https://api.capaly.in/api"
+    }
+  }
+}

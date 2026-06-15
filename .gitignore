@@ -1,0 +1,27 @@
+# Expo / React Native
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native build output
+/android
+/ios
+*.apk
+*.aab
+*.ipa
+
+# Environment files — never commit real values
+.env
+.env.local
+.env.*.local
+
+# EAS local credentials
+credentials.json
+
+# Logs & misc
+npm-debug.*
+*.log
+.DS_Store
+*.orig.*
