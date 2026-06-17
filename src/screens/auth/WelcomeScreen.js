@@ -1,11 +1,12 @@
-import React from 'react';
-import { View, Pressable, StyleSheet, Linking, useWindowDimensions } from 'react-native';
-import { Building2, User, ArrowRight } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { View, Pressable, StyleSheet, Linking, useWindowDimensions, ActivityIndicator } from 'react-native';
+import { Building2, User, ArrowRight, Sparkles } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useTheme } from '../../theme/ThemeProvider';
+import { useAuthStore } from '../../store/authStore';
 import Text from '../../components/ui/Text';
 
 // Mobile app is for field users only — Department and Employee portals.
@@ -20,6 +21,17 @@ export default function WelcomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const imageHeight = Math.round(height * 0.56); // image takes more than half
+  const startDemo = useAuthStore((s) => s.startDemo);
+  const [demoLoading, setDemoLoading] = useState(null); // 'employee' | 'department'
+
+  const tryDemo = async (portal) => {
+    setDemoLoading(portal);
+    try {
+      await startDemo(portal === 'department' ? 'DEPARTMENT' : 'EMPLOYEE');
+    } finally {
+      setDemoLoading(null);
+    }
+  };
 
   return (
     <View style={[styles.flex, { backgroundColor: '#FFFFFF' }]}>
@@ -75,6 +87,33 @@ export default function WelcomeScreen({ navigation }) {
             </Animated.View>
           );
         })}
+
+        {/* Demo / beta — explore with no login or backend */}
+        <View style={[styles.demoDivider, { backgroundColor: colors.border }]} />
+        <Pressable
+          onPress={() => tryDemo('employee')}
+          disabled={!!demoLoading}
+          style={({ pressed }) => [
+            styles.demoBtn,
+            { borderColor: '#0d419d', borderRadius: radius.lg },
+            pressed && { opacity: 0.85 },
+            demoLoading && { opacity: 0.6 },
+          ]}
+        >
+          {demoLoading === 'employee' ? (
+            <ActivityIndicator color="#0d419d" />
+          ) : (
+            <>
+              <Sparkles size={18} color="#0d419d" />
+              <Text style={[styles.demoBtnText, { color: '#0d419d' }]}>Explore the demo — no login needed</Text>
+            </>
+          )}
+        </Pressable>
+        <Pressable onPress={() => tryDemo('department')} disabled={!!demoLoading} hitSlop={8} style={styles.demoDeptLink}>
+          <Text style={[styles.demoDeptText, { color: colors.textMuted }]}>
+            {demoLoading === 'department' ? 'Loading…' : 'or preview the Department portal'}
+          </Text>
+        </Pressable>
 
         <View style={styles.spacer} />
 
@@ -135,6 +174,14 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16.5, fontWeight: '700' },
   cardSub: { fontSize: 12.5, marginTop: 3 },
   go: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  demoDivider: { height: StyleSheet.hairlineWidth, marginTop: 4, marginBottom: 14, marginHorizontal: 4 },
+  demoBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 13, borderWidth: 1.5, borderStyle: 'dashed',
+  },
+  demoBtnText: { fontSize: 14, fontWeight: '700' },
+  demoDeptLink: { alignItems: 'center', paddingVertical: 10 },
+  demoDeptText: { fontSize: 12.5, fontWeight: '600', textDecorationLine: 'underline' },
   spacer: { flex: 1, minHeight: 8 },
   footerContainer: { alignItems: 'center', justifyContent: 'center' },
   madeIn: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 8 },

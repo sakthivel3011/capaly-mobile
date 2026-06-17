@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { tokenStore } from './storage';
+import { resolveMock, demoMode } from './mock';
 
 // Resolve the API base URL. Android emulator reaches the host machine at
 // 10.0.2.2; override via app.json -> expo.extra.apiUrl or an EXPO_PUBLIC_API_URL
@@ -13,6 +14,22 @@ export const API_BASE =
   'http://10.0.2.2:5000/api';
 
 const api = axios.create({ baseURL: API_BASE, timeout: 20000 });
+
+// Demo / offline mock adapter. When demo mode is explicitly on, every request is
+// served locally from the canned dataset (no backend, no account needed). The
+// real network adapter is used otherwise.
+const httpAdapter = axios.getAdapter(axios.defaults.adapter);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+api.defaults.adapter = async (config) => {
+  if (demoMode.enabled()) {
+    const mock = resolveMock(config);
+    if (mock) {
+      await sleep(220); // a touch of latency so the UI feels real
+      return mock;
+    }
+  }
+  return httpAdapter(config);
+};
 
 // Pull the capaly_refresh_token cookie value out of a set-cookie header so we can
 // replay it on refresh (RN has no automatic cookie jar). Header may be a string
@@ -87,6 +104,14 @@ api.interceptors.response.use(
         if (onForceLogout) onForceLogout();
         return Promise.reject(refreshErr);
       }
+    }
+    // Graceful offline fallback: if the API is unreachable, serve demo data for
+    // read-only requests so the app never shows a blank/broken screen.
+    const isNetworkFail = !error.response; // timeout / DNS / connection refused
+    const method = (original?.method || 'get').toLowerCase();
+    if (isNetworkFail && method === 'get') {
+      const mock = resolveMock(original);
+      if (mock) return Promise.resolve(mock);
     }
     return Promise.reject(error);
   }

@@ -1,40 +1,43 @@
 {
   "expo": {
-    "name": "CAPALY",
+    "name": "CAPALY Beta",
     "slug": "capaly-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/app-icon.png",
     "scheme": "capaly",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/icon.png",
+      "image": "./assets/app-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#233DFF"
+      "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.capaly.mobile",
+      "buildNumber": "1",
+      "bundleIdentifier": "com.capaly.beta",
       "infoPlist": {
         "NSCameraUsageDescription": "CAPALY needs camera access to attach incident, investigation, CAPA and inspection photos.",
         "NSPhotoLibraryUsageDescription": "CAPALY needs photo library access to attach images to reports."
       }
     },
     "android": {
-      "package": "com.capaly.mobile",
+      "package": "com.capaly.beta",
+      "versionCode": 1,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#233DFF"
+        "foregroundImage": "./assets/app-icon.png",
+        "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "plugins": [
@@ -48,10 +51,14 @@
         }
       ],
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      "./plugins/withReactNativeArchitectures"
     ],
     "extra": {
-      "apiUrl": "https://api.capaly.in/api"
+      "apiUrl": "https://api.capaly.in/api",
+      "eas": {
+        "projectId": "e07f61e5-085e-47e7-b392-9a913ed327a1"
+      }
     }
   }
 }

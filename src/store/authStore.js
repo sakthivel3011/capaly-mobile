@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { authApi } from '../api/auth.api';
 import { tokenStore, cacheStore } from '../api/storage';
 import { setForceLogoutHandler } from '../api/client';
+import { demoMode } from '../api/mock';
 
 // The mobile app is for field users only: DEPARTMENT and EMPLOYEE portals.
 // Admins (SUPER_ADMIN / COMPANY_ADMIN) use the web portal and are rejected here.
@@ -24,6 +25,9 @@ export const useAuthStore = create((set, get) => ({
   // token (or refresh cookie) exists and /auth/me succeeds.
   async bootstrap() {
     setForceLogoutHandler(() => get().forceLogout());
+    // Restore demo mode (if the user previously chose "Explore demo") before any
+    // request fires, so the mock adapter is active for the /auth/me check.
+    await demoMode.restore();
     const token = await tokenStore.getAccessToken();
     const cookie = await tokenStore.getRefreshCookie();
     if (!token && !cookie) {
@@ -101,10 +105,19 @@ export const useAuthStore = create((set, get) => ({
     set({ mustChangePassword: false });
   },
 
+  // Start a no-backend demo session for the chosen portal ('EMPLOYEE' | 'DEPARTMENT').
+  async startDemo(portal = 'EMPLOYEE') {
+    await demoMode.set(true, portal);
+    const payload = { companyCode: 'DEMO', identifier: 'demo', password: 'demo' };
+    if (portal === 'DEPARTMENT') return get().departmentLogin(payload, true);
+    return get().employeeLogin(payload, true);
+  },
+
   async logout() {
     await authApi.logout();
     await tokenStore.clear();
     await cacheStore.setUser(null);
+    await demoMode.set(false);
     set({ status: 'unauthenticated', user: null, portalType: null, mustChangePassword: false });
   },
 
