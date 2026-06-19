@@ -1,17 +1,15 @@
 import axios from 'axios';
-import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { tokenStore } from './storage';
 import { resolveMock, demoMode } from './mock';
 
-// Resolve the API base URL. Android emulator reaches the host machine at
-// 10.0.2.2; override via app.json -> expo.extra.apiUrl or an EXPO_PUBLIC_API_URL
-// env var for physical devices / production.
+// Resolve the API base URL. Production builds inject EXPO_PUBLIC_API_URL via
+// eas.json; app.json -> expo.extra.apiUrl is the bundled default. Both point at
+// the live backend, and the final literal is the production API as a safety net.
 export const API_BASE =
   process.env.EXPO_PUBLIC_API_URL ||
-  (Platform.OS === 'web' ? 'http://localhost:5000/api' : null) ||
   Constants.expoConfig?.extra?.apiUrl ||
-  'http://10.0.2.2:5000/api';
+  'https://api.capaly.in/api';
 
 const api = axios.create({ baseURL: API_BASE, timeout: 20000 });
 

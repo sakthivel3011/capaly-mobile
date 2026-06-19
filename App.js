@@ -32,12 +32,12 @@ function Shell() {
 }
 
 export default function App() {
-  const [fontsLoaded, fontError] = useFonts({
+  // Load the brand fonts as a side effect; the UI renders with system fallbacks
+  // until they're ready, so we don't need to gate on the load state here.
+  useFonts({
     'Mileast-Regular': require('./assets/fonts/Mileast-Regular.otf'),
     'Mileast-Italic': require('./assets/fonts/Mileast-Italic.otf'),
   });
-
-  console.log('Fonts status:', { fontsLoaded, fontError });
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

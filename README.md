@@ -46,7 +46,9 @@ Make sure `capaly-backend` is running (`npm run dev` in `../capaly-backend`).
 The API base URL resolves in this order:
 1. `EXPO_PUBLIC_API_URL` env var
 2. `expo.extra.apiUrl` in `app.json`
-3. fallback `http://10.0.2.2:5000/api`
+3. fallback `https://api.capaly.in/api` (production)
+
+For local development, set `EXPO_PUBLIC_API_URL` in `.env` (see `.env.example`):
 
 - **Android emulator:** `http://10.0.2.2:5000/api`
 - **iOS simulator:** `http://localhost:5000/api`

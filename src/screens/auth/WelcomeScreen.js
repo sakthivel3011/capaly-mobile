@@ -129,14 +129,14 @@ export default function WelcomeScreen({ navigation }) {
           <View style={styles.legalLinks}>
             <Text
               style={[styles.legalLink, { color: '#0d419d' }]}
-              onPress={() => Linking.openURL('https://capaly.com/terms').catch((err) => console.error(err))}
+              onPress={() => Linking.openURL('https://capaly.in/terms').catch((err) => console.error(err))}
             >
               Terms & Conditions
             </Text>
             <Text style={[styles.separator, { color: colors.textFaint }]}>•</Text>
             <Text
               style={[styles.legalLink, { color: '#0d419d' }]}
-              onPress={() => Linking.openURL('https://capaly.com/privacy').catch((err) => console.error(err))}
+              onPress={() => Linking.openURL('https://capaly.in/privacy').catch((err) => console.error(err))}
             >
               Privacy Policy
             </Text>

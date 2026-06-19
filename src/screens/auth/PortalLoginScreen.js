@@ -204,10 +204,10 @@ export default function PortalLoginScreen({ navigation, route }) {
                   <Text style={[styles.legalIntro, { color: colors.textFaint }]}>By signing in you agree to our</Text>
                   <View style={styles.legalLinks}>
                     <Text style={[styles.legalLink, { color: C }]}
-                      onPress={() => Linking.openURL('https://capaly.com/terms').catch((e) => console.error(e))}>Terms & Conditions</Text>
+                      onPress={() => Linking.openURL('https://capaly.in/terms').catch((e) => console.error(e))}>Terms & Conditions</Text>
                     <Text style={[styles.legalSep, { color: colors.textFaint }]}>•</Text>
                     <Text style={[styles.legalLink, { color: C }]}
-                      onPress={() => Linking.openURL('https://capaly.com/privacy').catch((e) => console.error(e))}>Privacy Policy</Text>
+                      onPress={() => Linking.openURL('https://capaly.in/privacy').catch((e) => console.error(e))}>Privacy Policy</Text>
                   </View>
                 </View>
               </View>
