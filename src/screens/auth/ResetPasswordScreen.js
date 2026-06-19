@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +10,7 @@ import { authApi } from '../../api/auth.api';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { apiError } from '../../api/client';
 import AppHeader from '../../components/ui/AppHeader';
+import KeyboardAwareScroll from '../../components/ui/KeyboardAwareScroll';
 import Text from '../../components/ui/Text';
 import Button from '../../components/ui/Button';
 import { ControlledField } from '../../components/ui/Input';
@@ -46,7 +47,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <AppHeader
         title="Set new password"
         onBack={() => navigation.goBack()}
@@ -58,7 +59,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
           />
         }
       />
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScroll contentContainerStyle={styles.scroll}>
         <Text variant="body" color="textMuted" style={styles.subtitle}>
           Paste the reset code from your email and choose a new password.
         </Text>
@@ -93,8 +94,8 @@ export default function ResetPasswordScreen({ navigation, route }) {
           focusBorderColor="#0d419d"
         />
         <Button title="Reset password" onPress={handleSubmit(onSubmit)} loading={submitting} style={{ marginTop: 8 }} color="#0d419d" />
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScroll>
+    </View>
   );
 }
 

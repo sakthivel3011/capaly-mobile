@@ -149,6 +149,8 @@ export default function CompanySelectScreen({ navigation, route }) {
             onRefresh={refresh}
             refreshing={refreshing}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
           />
         )}
       </View>

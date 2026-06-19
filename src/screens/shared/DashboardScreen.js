@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import {
-  AlertTriangle, ClipboardCheck, ShieldCheck, CheckCircle2, ListTodo, FileWarning, PlusCircle, Activity,
+  AlertTriangle, ClipboardCheck, ShieldCheck, CheckCircle2, ListTodo, FileWarning, Activity,
 } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { usePortal } from '../../hooks/usePortal';
@@ -109,23 +109,6 @@ export default function DashboardScreen({ navigation }) {
             </View>
           )}
 
-          {/* Quick actions (employee can report) */}
-          {portal.canReport ? (
-            <Card onPress={() => navigation.navigate('ReportIncident')} style={styles.quickAction}>
-              <View style={styles.quickRow}>
-                <View style={styles.quickIcon}>
-                  <PlusCircle size={28} color={REPORT_BLUE} />
-                </View>
-                <View style={{ flex: 1, marginLeft: 14 }}>
-                  <Text variant="title">Report an incident</Text>
-                  <Text variant="caption" color="textMuted" style={{ marginTop: 2 }}>
-                    Capture hazards, near-misses and injuries fast
-                  </Text>
-                </View>
-              </View>
-            </Card>
-          ) : null}
-
           {/* Trend chart */}
           {view.trend.length ? (
             <Card style={styles.section}>
@@ -184,9 +167,6 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 16, marginTop: 16 },
   kpiGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   kpi: { flexBasis: '48%', flexGrow: 0, marginBottom: 12 },
-  quickAction: { marginTop: 4, marginBottom: 8 },
-  quickRow: { flexDirection: 'row', alignItems: 'center' },
-  quickIcon: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   section: { marginTop: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20, marginBottom: 12 },
   activityTitle: { marginTop: 20, marginBottom: 12 },

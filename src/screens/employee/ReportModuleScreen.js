@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { Search, ClipboardCheck, ShieldCheck, Send, AlignLeft } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
@@ -9,6 +9,7 @@ import { apiError } from '../../api/client';
 import { useAsync } from '../../hooks/useAsync';
 import { useToast } from '../../components/feedback/ToastProvider';
 import AppHeader from '../../components/ui/AppHeader';
+import KeyboardAwareScroll from '../../components/ui/KeyboardAwareScroll';
 import SectionCard from '../../components/ui/SectionCard';
 import { TextField } from '../../components/ui/Input';
 import SelectField from '../../components/ui/SelectField';
@@ -76,7 +77,8 @@ export default function ReportModuleScreen({ navigation, route }) {
   const cfg = MODULES[moduleKey];
   const [submitting, setSubmitting] = useState(false);
 
-  const { data: incidentsData } = useAsync(() => incidentApi.empList(), [], { immediate: cfg.needsIncident });
+  // Pull the whole company's incidents so the picker can target older ones too.
+  const { data: incidentsData } = useAsync(() => incidentApi.empCompanyList(), [], { immediate: cfg.needsIncident });
   const incidents = useMemo(() => asArray(incidentsData), [incidentsData]);
   const [incidentDisplay, setIncidentDisplay] = useState('');
 
@@ -119,9 +121,9 @@ export default function ReportModuleScreen({ navigation, route }) {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <AppHeader title={cfg.title} onBack={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScroll contentContainerStyle={styles.scroll}>
         <SectionCard icon={cfg.icon} title="Details">
           {cfg.needsIncident ? (
             <Controller control={control} name="incidentId" render={({ field: { value, onChange } }) => (
@@ -156,8 +158,8 @@ export default function ReportModuleScreen({ navigation, route }) {
         </SectionCard>
 
         <Button title="Submit" icon={<Send size={18} color="#fff" />} onPress={handleSubmit(onSubmit)} loading={submitting} color={[accent, accentDark]} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScroll>
+    </View>
   );
 }
 

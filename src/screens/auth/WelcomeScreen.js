@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { View, Pressable, StyleSheet, Linking, useWindowDimensions, ActivityIndicator } from 'react-native';
-import { Building2, User, ArrowRight, Sparkles } from 'lucide-react-native';
+import React from 'react';
+import { View, Pressable, StyleSheet, Linking, useWindowDimensions } from 'react-native';
+import { Building2, User, ArrowRight } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useTheme } from '../../theme/ThemeProvider';
-import { useAuthStore } from '../../store/authStore';
 import Text from '../../components/ui/Text';
 
 // Mobile app is for field users only — Department and Employee portals.
@@ -21,26 +20,17 @@ export default function WelcomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const imageHeight = Math.round(height * 0.56); // image takes more than half
-  const startDemo = useAuthStore((s) => s.startDemo);
-  const [demoLoading, setDemoLoading] = useState(null); // 'employee' | 'department'
-
-  const tryDemo = async (portal) => {
-    setDemoLoading(portal);
-    try {
-      await startDemo(portal === 'department' ? 'DEPARTMENT' : 'EMPLOYEE');
-    } finally {
-      setDemoLoading(null);
-    }
-  };
 
   return (
     <View style={[styles.flex, { backgroundColor: '#FFFFFF' }]}>
-      {/* Full-bleed hero image */}
-      <Image
-        source={require('../../../assets/2.png')}
-        style={[styles.heroImg, { height: imageHeight }]}
-        contentFit="cover"
-      />
+      {/* Full-bleed hero image — gentle fade-in on mount */}
+      <Animated.View entering={FadeIn.duration(600)} style={[styles.heroImg, { height: imageHeight }]}>
+        <Image
+          source={require('../../../assets/2.png')}
+          style={StyleSheet.absoluteFill}
+          contentFit="cover"
+        />
+      </Animated.View>
       {/* fade the bottom of the image into the white sheet */}
       <LinearGradient
         pointerEvents="none"
@@ -50,15 +40,17 @@ export default function WelcomeScreen({ navigation }) {
 
       {/* Overlapping white sheet with the portal chooser */}
       <View style={[styles.sheet, { marginTop: imageHeight - 36 }]}>
-        <Text style={[styles.choose, { color: colors.text }]}>Choose your portal</Text>
-        <Text style={[styles.chooseSub, { color: colors.textMuted }]}>
-          Sign in to the workspace built for your role
-        </Text>
+        <Animated.View entering={FadeInDown.delay(120).duration(500)}>
+          <Text style={[styles.choose, { color: colors.text }]}>Choose your portal</Text>
+          <Text style={[styles.chooseSub, { color: colors.textMuted }]}>
+            Sign in to the workspace built for your role
+          </Text>
+        </Animated.View>
 
         {PORTALS.map((p, i) => {
           const Icon = p.icon;
           return (
-            <Animated.View key={p.key} entering={FadeInDown.delay(120 + i * 110).springify().damping(15)}>
+            <Animated.View key={p.key} entering={FadeInRight.delay(260 + i * 130).springify().damping(16)}>
               <Pressable
                 onPress={() => navigation.navigate(p.route, { portal: p.key })}
                 style={({ pressed }) => [
@@ -87,33 +79,6 @@ export default function WelcomeScreen({ navigation }) {
             </Animated.View>
           );
         })}
-
-        {/* Demo / beta — explore with no login or backend */}
-        <View style={[styles.demoDivider, { backgroundColor: colors.border }]} />
-        <Pressable
-          onPress={() => tryDemo('employee')}
-          disabled={!!demoLoading}
-          style={({ pressed }) => [
-            styles.demoBtn,
-            { borderColor: '#0d419d', borderRadius: radius.lg },
-            pressed && { opacity: 0.85 },
-            demoLoading && { opacity: 0.6 },
-          ]}
-        >
-          {demoLoading === 'employee' ? (
-            <ActivityIndicator color="#0d419d" />
-          ) : (
-            <>
-              <Sparkles size={18} color="#0d419d" />
-              <Text style={[styles.demoBtnText, { color: '#0d419d' }]}>Explore the demo — no login needed</Text>
-            </>
-          )}
-        </Pressable>
-        <Pressable onPress={() => tryDemo('department')} disabled={!!demoLoading} hitSlop={8} style={styles.demoDeptLink}>
-          <Text style={[styles.demoDeptText, { color: colors.textMuted }]}>
-            {demoLoading === 'department' ? 'Loading…' : 'or preview the Department portal'}
-          </Text>
-        </Pressable>
 
         <View style={styles.spacer} />
 
@@ -174,14 +139,6 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16.5, fontWeight: '700' },
   cardSub: { fontSize: 12.5, marginTop: 3 },
   go: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
-  demoDivider: { height: StyleSheet.hairlineWidth, marginTop: 4, marginBottom: 14, marginHorizontal: 4 },
-  demoBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    paddingVertical: 13, borderWidth: 1.5, borderStyle: 'dashed',
-  },
-  demoBtnText: { fontSize: 14, fontWeight: '700' },
-  demoDeptLink: { alignItems: 'center', paddingVertical: 10 },
-  demoDeptText: { fontSize: 12.5, fontWeight: '600', textDecorationLine: 'underline' },
   spacer: { flex: 1, minHeight: 8 },
   footerContainer: { alignItems: 'center', justifyContent: 'center' },
   madeIn: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 8 },

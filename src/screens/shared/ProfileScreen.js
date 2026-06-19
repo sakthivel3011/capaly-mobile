@@ -3,6 +3,7 @@ import { View, Pressable, ScrollView, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {
   Mail, Phone, IdCard, Building2, Settings as SettingsIcon, KeyRound, Bell, LogOut, Camera, ChevronRight, Pencil, Briefcase,
+  Palette, Sun, Moon, Smartphone,
 } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAccents } from '../../theme/accent';
@@ -20,8 +21,14 @@ import { TextField } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
 import { fullName, resolveImageUrl } from '../../utils/format';
 
+const THEMES = [
+  { key: 'light', label: 'Light', icon: Sun },
+  { key: 'dark', label: 'Dark', icon: Moon },
+  { key: 'system', label: 'System', icon: Smartphone },
+];
+
 export default function ProfileScreen({ navigation }) {
-  const { colors } = useTheme();
+  const { colors, preference, setThemePreference } = useTheme();
   const { accent, accentDark } = useAccents();
   const toast = useToast();
   const confirm = useConfirm();
@@ -139,6 +146,33 @@ export default function ProfileScreen({ navigation }) {
           </Card>
         )}
 
+        {/* Appearance — quick theme switch right on the profile */}
+        <Card style={styles.section}>
+          <View style={styles.themeHeader}>
+            <Palette size={18} color={accent} />
+            <Text variant="title" style={{ marginLeft: 10 }}>Theme</Text>
+          </View>
+          <View style={styles.themeRow}>
+            {THEMES.map((t) => {
+              const Icon = t.icon;
+              const active = preference === t.key;
+              return (
+                <Pressable
+                  key={t.key}
+                  onPress={() => setThemePreference(t.key)}
+                  style={[
+                    styles.themeOption,
+                    { backgroundColor: active ? accent : colors.surfaceAlt, borderColor: active ? accent : colors.border },
+                  ]}
+                >
+                  <Icon size={20} color={active ? '#fff' : colors.textMuted} />
+                  <Text variant="small" color={active ? '#FFFFFF' : 'textMuted'} style={{ marginTop: 6 }}>{t.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </Card>
+
         <Card style={styles.section} padded={false}>
           <View style={styles.menuPad}>
             <MenuRow icon={Bell} label="Notifications" onPress={() => navigation.navigate('Notifications')} />
@@ -178,6 +212,9 @@ const styles = StyleSheet.create({
   avatarWrap: { position: 'relative' },
   cameraBadge: { position: 'absolute', bottom: 0, right: 0, width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', borderWidth: 3 },
   section: { marginTop: 16 },
+  themeHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  themeRow: { flexDirection: 'row', gap: 10 },
+  themeOption: { flex: 1, alignItems: 'center', paddingVertical: 14, borderRadius: 14, borderWidth: 1.5 },
   infoRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14 },
   menuPad: { paddingHorizontal: 16 },
   menuRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 15, borderBottomWidth: StyleSheet.hairlineWidth },

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,7 +12,7 @@ import { incidentApi } from '../../api/data.api';
 import { apiError } from '../../api/client';
 import { useToast } from '../../components/feedback/ToastProvider';
 import AppHeader from '../../components/ui/AppHeader';
-import Screen from '../../components/ui/Screen';
+import KeyboardAwareScroll from '../../components/ui/KeyboardAwareScroll';
 import SectionCard from '../../components/ui/SectionCard';
 import { TextField, ControlledField } from '../../components/ui/Input';
 import SelectField from '../../components/ui/SelectField';
@@ -67,9 +67,9 @@ export default function ReportIncidentScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <AppHeader title="Report Incident" subtitle="Capture what happened" onBack={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScroll contentContainerStyle={styles.scroll}>
         <SectionCard icon={FileText} title="Incident details">
           <ControlledField control={control} name="title" label="Title" placeholder="e.g. Slip near loading bay"
             leftIcon={<Type size={18} color={colors.textMuted} />} />
@@ -100,8 +100,8 @@ export default function ReportIncidentScreen({ navigation }) {
         </SectionCard>
 
         <Button title="Submit report" icon={<Send size={18} color="#fff" />} onPress={handleSubmit(onSubmit)} loading={submitting} color={[accent, accentDark]} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScroll>
+    </View>
   );
 }
 

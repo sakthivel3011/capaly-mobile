@@ -3,6 +3,8 @@ import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { lightColors, darkColors } from './colors';
 import { spacing, radius, typography, shadow, shadowSoft } from './tokens';
+import { accentFor, accentDarkFor } from './accent';
+import { useAuthStore } from '../store/authStore';
 
 const STORAGE_KEY = 'capaly.theme.preference'; // 'light' | 'dark' | 'system'
 
@@ -26,7 +28,22 @@ export function ThemeProvider({ children, forceLight = false }) {
   // `forceLight` pins the subtree to the light palette (used for the auth flow,
   // which is always shown light regardless of the saved theme).
   const isDark = forceLight ? false : (preference === 'system' ? system === 'dark' : preference === 'dark');
-  const colors = isDark ? darkColors : lightColors;
+  const base = isDark ? darkColors : lightColors;
+
+  // Brand the palette to the active portal so the whole app uses the portal
+  // accent (Employee = blue, Department = green) instead of the default deep-red
+  // primary. Falls back to the default blue accent before login.
+  const portalType = useAuthStore((s) => s.portalType);
+  const colors = useMemo(() => {
+    const accent = accentFor(portalType);
+    const accentDark = accentDarkFor(portalType);
+    return {
+      ...base,
+      primary: accent,
+      primaryDark: accentDark,
+      primaryBg: `${accent}1A`,
+    };
+  }, [base, portalType]);
 
   const setThemePreference = useCallback(async (pref) => {
     setPreference(pref);

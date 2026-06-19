@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +10,7 @@ import { authApi } from '../../api/auth.api';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { apiError } from '../../api/client';
 import AppHeader from '../../components/ui/AppHeader';
+import KeyboardAwareScroll from '../../components/ui/KeyboardAwareScroll';
 import Text from '../../components/ui/Text';
 import Button from '../../components/ui/Button';
 import { ControlledField } from '../../components/ui/Input';
@@ -37,7 +38,7 @@ export default function ForgotPasswordScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <AppHeader
         title="Forgot password"
         onBack={() => navigation.goBack()}
@@ -49,7 +50,7 @@ export default function ForgotPasswordScreen({ navigation }) {
           />
         }
       />
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScroll contentContainerStyle={styles.scroll}>
         {sent ? (
           <View style={styles.sent}>
             <View style={[styles.iconWrap, { backgroundColor: colors.successBg }]}>
@@ -83,8 +84,8 @@ export default function ForgotPasswordScreen({ navigation }) {
             </View>
           </>
         )}
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScroll>
+    </View>
   );
 }
 

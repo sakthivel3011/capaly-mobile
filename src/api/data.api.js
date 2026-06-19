@@ -24,6 +24,9 @@ export const incidentApi = {
 
   // Employee scope
   empList: (params) => api.get('/employee/incidents', { params }).then((r) => r.data),
+  // All incidents in the employee's company (read-only) — for the related-incident
+  // picker so reports can target older company incidents, not just their own.
+  empCompanyList: (params) => api.get('/employee/company-incidents', { params }).then((r) => r.data),
   empDetail: (id) => api.get(`/employee/incidents/${id}`).then((r) => r.data),
   // Employee report (multipart). `form` is a FormData instance.
   empReport: (form) =>

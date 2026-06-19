@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Pressable, Linking } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, StyleSheet, Pressable, Linking } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useForm } from 'react-hook-form';
@@ -15,6 +15,7 @@ import { resolveImageUrl } from '../../utils/format';
 import Text from '../../components/ui/Text';
 import Button from '../../components/ui/Button';
 import { ControlledField } from '../../components/ui/Input';
+import KeyboardAwareScroll, { scrollFocusedIntoView } from '../../components/ui/KeyboardAwareScroll';
 
 const PORTAL_META = {
   department: { label: 'Department Portal', color: '#008062', colorDark: '#00674e', image: require('../../../assets/10.png') },
@@ -49,6 +50,8 @@ export default function PortalLoginScreen({ navigation, route }) {
   const employeeLogin = useAuthStore((s) => s.employeeLogin);
   const employeeRegister = useAuthStore((s) => s.employeeRegister);
   const [submitting, setSubmitting] = useState(false);
+  const scrollRef = useRef(null);
+  const onFieldFocus = scrollFocusedIntoView(scrollRef);
 
   const isDept = portal === 'department';
   const logo = resolveImageUrl(company.logoUrl);
@@ -109,14 +112,10 @@ export default function PortalLoginScreen({ navigation, route }) {
         <ChevronLeft size={22} color="#fff" />
       </Pressable>
 
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 40 }}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          showsVerticalScrollIndicator={false}
-        >
+      <KeyboardAwareScroll
+        scrollRef={scrollRef}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 40 }}
+      >
           {/* Hero image */}
           <View style={styles.hero}>
             <Image source={meta.image} style={StyleSheet.absoluteFill} contentFit="cover" />
@@ -175,10 +174,13 @@ export default function PortalLoginScreen({ navigation, route }) {
                     leftIcon={<User size={18} color={colors.textMuted} />} focusBorderColor={C} />
                 </View>
                 <ControlledField control={regControl} name="email" label="Email" placeholder="you@company.com" autoCapitalize="none"
+                  onFocus={onFieldFocus}
                   keyboardType="email-address" leftIcon={<Mail size={18} color={colors.textMuted} />} focusBorderColor={C} />
                 <ControlledField control={regControl} name="phone" label="Phone" placeholder="e.g. +1234567890" autoCapitalize="none"
+                  onFocus={onFieldFocus}
                   keyboardType="phone-pad" leftIcon={<Phone size={18} color={colors.textMuted} />} focusBorderColor={C} />
                 <ControlledField control={regControl} name="password" label="Password" placeholder="••••••••" secure autoCapitalize="none"
+                  onFocus={onFieldFocus}
                   leftIcon={<Lock size={18} color={colors.textMuted} />} focusBorderColor={C} />
                 <Button title="Create account" onPress={handleRegSubmit(onRegister)} loading={submitting} style={{ marginTop: 8 }} color={[C, meta.colorDark]} />
               </View>
@@ -187,8 +189,10 @@ export default function PortalLoginScreen({ navigation, route }) {
                 <ControlledField control={control} name="identifier"
                   label={isDept ? 'Login email' : 'Employee code or email'}
                   placeholder={isDept ? 'name@company.com' : 'EMP001 or email'} autoCapitalize="none"
+                  onFocus={onFieldFocus}
                   leftIcon={<User size={18} color={colors.textMuted} />} focusBorderColor={C} />
                 <ControlledField control={control} name="password" label="Password" placeholder="••••••••" secure autoCapitalize="none"
+                  onFocus={onFieldFocus}
                   leftIcon={<Lock size={18} color={colors.textMuted} />} focusBorderColor={C} />
 
                 <Button title="Sign in" onPress={handleSubmit(onSubmit)} loading={submitting} style={{ marginTop: 8 }} color={[C, meta.colorDark]} />
@@ -213,8 +217,7 @@ export default function PortalLoginScreen({ navigation, route }) {
               </View>
             )}
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScroll>
     </View>
   );
 }
