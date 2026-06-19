@@ -2,7 +2,7 @@
   "expo": {
     "name": "CAPALY",
     "slug": "capaly-mobile",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/app-icon.png",
     "scheme": "capaly",
@@ -18,7 +18,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "1",
+      "buildNumber": "2",
       "bundleIdentifier": "in.capaly.app",
       "infoPlist": {
         "NSCameraUsageDescription": "CAPALY needs camera access to attach incident, investigation, CAPA and inspection photos.",
@@ -27,7 +27,7 @@
     },
     "android": {
       "package": "in.capaly.app",
-      "versionCode": 1,
+      "versionCode": 2,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
