@@ -1,6 +1,6 @@
 # CAPALY Beta — Android Tester Guide
 
-**App:** CAPALY Beta · `com.capaly.beta` · v1.0.0 (versionCode 1)
+**App:** CAPALY Beta · `in.capaly.beta` · v1.0.2 (versionCode 3)
 **Build profile:** `preview` (direct-install `.apk`, not an `.aab`)
 
 ---
@@ -73,4 +73,4 @@ eas build -p android --profile preview
 
 - Demo-mode writes (new reports, status changes) are not saved.
 - Report file exports and push notifications require the live backend.
-- iOS builds are configured (`com.capaly.beta`) but not part of this Android beta.
+- iOS builds are configured (`in.capaly.app`) but not part of this Android beta.

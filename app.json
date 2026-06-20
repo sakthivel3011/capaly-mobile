@@ -26,7 +26,8 @@
       }
     },
     "android": {
-      "package": "in.capaly.app",
+      "package": "in.capaly.beta",
+      "googleServicesFile": "./google-services.json",
       "versionCode": 3,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
