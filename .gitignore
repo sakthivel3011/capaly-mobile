@@ -22,7 +22,7 @@ credentials.json
 
 # Firebase config — keep out of git (EAS still bundles it via app.json
 # googleServicesFile when building).
-google-services.json
+
 GoogleService-Info.plist
 
 # Logs & misc

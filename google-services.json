@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "906997703172",
+    "project_id": "capaly2026",
+    "storage_bucket": "capaly2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:906997703172:android:35845103c7f34880370b51",
+        "android_client_info": {
+          "package_name": "in.capaly.beta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvpM0QEXlVZP0b6W-AgbCqlgocrXAMxI0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
