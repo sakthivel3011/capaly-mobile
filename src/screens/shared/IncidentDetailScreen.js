@@ -129,6 +129,25 @@ export default function IncidentDetailScreen({ navigation, route }) {
               </View>
             </View>
 
+            {/* Department actions — add a workflow report against this incident */}
+            {portal.isDept && incident.id ? (
+              <View style={styles.actionBar}>
+                {[
+                  { label: 'Investigation', module: 'investigation' },
+                  { label: 'CAPA', module: 'capa' },
+                  { label: 'Inspection', module: 'inspection' },
+                ].map((a) => (
+                  <Pressable
+                    key={a.module}
+                    onPress={() => navigation.navigate('ReportModule', { module: a.module, incidentId: incident.id, incidentNo: incident.incidentNo })}
+                    style={({ pressed }) => [styles.actionBtn, { borderColor: ACCENT, backgroundColor: `${ACCENT}10` }, pressed && { opacity: 0.7 }]}
+                  >
+                    <Text variant="caption" style={{ color: ACCENT, fontWeight: '700' }}>+ {a.label}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+
             <View style={styles.sections}>
               {/* Overview */}
               <AccordionSection icon={FileText} title="Overview" open={!!open.overview} onToggle={() => toggle('overview')}>
@@ -245,6 +264,8 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: 40 },
   headerCard: { paddingHorizontal: 16, paddingTop: 8 },
   badgeRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  actionBar: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginTop: 16 },
+  actionBtn: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10, borderWidth: 1.5 },
   sections: { paddingHorizontal: 16, marginTop: 18, gap: 12 },
   section: { borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
   secHeader: { flexDirection: 'row', alignItems: 'center', padding: 14 },

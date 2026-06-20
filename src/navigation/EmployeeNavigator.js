@@ -17,6 +17,7 @@ import ReportIncidentScreen from '../screens/employee/ReportIncidentScreen';
 import ReportModuleScreen from '../screens/employee/ReportModuleScreen';
 import NotificationsScreen from '../screens/shared/NotificationsScreen';
 import ProfileScreen from '../screens/shared/ProfileScreen';
+import WorkflowScreen from '../screens/shared/WorkflowScreen';
 import SettingsScreen from '../screens/shared/SettingsScreen';
 import ChangePasswordScreen from '../screens/shared/ChangePasswordScreen';
 import CompanyAboutScreen from '../screens/shared/CompanyAboutScreen';
@@ -68,6 +69,7 @@ function ProfileStack() {
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
       <Stack.Screen name="CompanyAbout" component={CompanyAboutScreen} />
+      <Stack.Screen name="Workflow" component={WorkflowScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
     </Stack.Navigator>
   );

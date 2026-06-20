@@ -3,12 +3,13 @@ import { View, Pressable, ScrollView, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {
   Mail, Phone, IdCard, Building2, Settings as SettingsIcon, KeyRound, Bell, LogOut, Camera, ChevronRight, Pencil, Briefcase,
-  Palette, Sun, Moon, Smartphone,
+  GitBranch, BellRing,
 } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAccents } from '../../theme/accent';
 import { useAuthStore, PORTAL } from '../../store/authStore';
-import { profileApi } from '../../api/data.api';
+import { profileApi, notificationApi } from '../../api/data.api';
+import { registerAndSyncPushToken } from '../../services/push';
 import { apiError } from '../../api/client';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { useConfirm } from '../../components/feedback/ConfirmProvider';
@@ -21,14 +22,8 @@ import { TextField } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
 import { fullName, resolveImageUrl } from '../../utils/format';
 
-const THEMES = [
-  { key: 'light', label: 'Light', icon: Sun },
-  { key: 'dark', label: 'Dark', icon: Moon },
-  { key: 'system', label: 'System', icon: Smartphone },
-];
-
 export default function ProfileScreen({ navigation }) {
-  const { colors, preference, setThemePreference } = useTheme();
+  const { colors } = useTheme();
   const { accent, accentDark } = useAccents();
   const toast = useToast();
   const confirm = useConfirm();
@@ -72,6 +67,18 @@ export default function ProfileScreen({ navigation }) {
     }
   };
 
+  const sendTestNotification = async () => {
+    try {
+      // Make sure this device's token is registered first, then ask the backend
+      // to push a test notification back to it (F §3/§4).
+      await registerAndSyncPushToken();
+      await notificationApi.selfTestPush();
+      toast.success('Test notification sent. Check your notification tray.');
+    } catch (err) {
+      toast.error(apiError(err, 'Could not send test notification. Allow notifications and try again.'));
+    }
+  };
+
   const onLogout = async () => {
     const ok = await confirm({ title: 'Sign out?', message: 'You will need to sign in again to access CAPALY.', confirmText: 'Sign out', danger: true });
     if (ok) await logout();
@@ -79,8 +86,8 @@ export default function ProfileScreen({ navigation }) {
 
   const avatarUri = image?.uri || resolveImageUrl(user?.profileImageUrl || user?.avatarUrl);
 
-  const MenuRow = ({ icon: Icon, label, onPress, danger }) => (
-    <Pressable onPress={onPress} style={[styles.menuRow, { borderBottomColor: colors.border }]}>
+  const MenuRow = ({ icon: Icon, label, onPress, danger, last }) => (
+    <Pressable onPress={onPress} style={[styles.menuRow, !last && { borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth }]}>
       <View style={[styles.menuIcon, { backgroundColor: danger ? colors.dangerBg : colors.surfaceAlt }]}>
         <Icon size={18} color={danger ? colors.danger : colors.text} />
       </View>
@@ -146,41 +153,23 @@ export default function ProfileScreen({ navigation }) {
           </Card>
         )}
 
-        {/* Appearance — quick theme switch right on the profile */}
-        <Card style={styles.section}>
-          <View style={styles.themeHeader}>
-            <Palette size={18} color={accent} />
-            <Text variant="title" style={{ marginLeft: 10 }}>Theme</Text>
-          </View>
-          <View style={styles.themeRow}>
-            {THEMES.map((t) => {
-              const Icon = t.icon;
-              const active = preference === t.key;
-              return (
-                <Pressable
-                  key={t.key}
-                  onPress={() => setThemePreference(t.key)}
-                  style={[
-                    styles.themeOption,
-                    { backgroundColor: active ? accent : colors.surfaceAlt, borderColor: active ? accent : colors.border },
-                  ]}
-                >
-                  <Icon size={20} color={active ? '#fff' : colors.textMuted} />
-                  <Text variant="small" color={active ? '#FFFFFF' : 'textMuted'} style={{ marginTop: 6 }}>{t.label}</Text>
-                </Pressable>
-              );
-            })}
+        <Card style={styles.section} padded={false}>
+          <View style={styles.menuPad}>
+            <MenuRow icon={GitBranch} label="Company Workflow" onPress={() => navigation.navigate('Workflow')} />
+            <MenuRow icon={Bell} label="Notifications" onPress={() => navigation.navigate('Notifications')} />
+            <MenuRow icon={BellRing} label="Send Test Notification" onPress={sendTestNotification} />
+            <MenuRow icon={KeyRound} label="Change Password" onPress={() => navigation.navigate('ChangePassword')} />
+            <MenuRow icon={SettingsIcon} label="Settings" onPress={() => navigation.navigate('Settings')} last />
           </View>
         </Card>
 
-        <Card style={styles.section} padded={false}>
-          <View style={styles.menuPad}>
-            <MenuRow icon={Bell} label="Notifications" onPress={() => navigation.navigate('Notifications')} />
-            <MenuRow icon={KeyRound} label="Change Password" onPress={() => navigation.navigate('ChangePassword')} />
-            <MenuRow icon={SettingsIcon} label="Settings" onPress={() => navigation.navigate('Settings')} />
-            <MenuRow icon={LogOut} label="Sign out" onPress={onLogout} danger />
-          </View>
-        </Card>
+        <Button
+          title="Logout"
+          icon={<LogOut size={18} color="#fff" />}
+          onPress={onLogout}
+          variant="danger"
+          style={styles.section}
+        />
 
         <Text variant="caption" color="textFaint" style={styles.version}>CAPALY Mobile · v1.0.0</Text>
       </ScrollView>
@@ -217,7 +206,7 @@ const styles = StyleSheet.create({
   themeOption: { flex: 1, alignItems: 'center', paddingVertical: 14, borderRadius: 14, borderWidth: 1.5 },
   infoRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14 },
   menuPad: { paddingHorizontal: 16 },
-  menuRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 15, borderBottomWidth: StyleSheet.hairlineWidth },
+  menuRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 15 },
   menuIcon: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   editBtn: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   version: { textAlign: 'center', marginTop: 24 },

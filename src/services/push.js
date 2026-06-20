@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { useAuthStore } from '../store/authStore';
+import { userApi } from '../api/data.api';
 
 // Foreground presentation: show banners + badge while the app is open.
 Notifications.setNotificationHandler({
@@ -34,12 +35,30 @@ export async function registerForPush() {
     const req = await Notifications.requestPermissionsAsync();
     status = req.status;
   }
-  if (status !== 'granted') return null;
+  if (status !== 'granted') {
+    console.warn('Push permission denied — notifications will not be delivered.');
+    return null;
+  }
 
   try {
     const token = await Notifications.getExpoPushTokenAsync();
     return token.data;
-  } catch {
+  } catch (e) {
+    console.warn('Failed to get Expo push token:', e?.message);
+    return null;
+  }
+}
+
+// Register for push AND persist the token against the logged-in user so the
+// backend can deliver notifications to this device (F §1).
+export async function registerAndSyncPushToken() {
+  try {
+    const token = await registerForPush();
+    if (!token) return null;
+    await userApi.saveFcmToken(token, Platform.OS);
+    return token;
+  } catch (e) {
+    console.warn('Could not sync push token to backend:', e?.message);
     return null;
   }
 }
@@ -52,7 +71,8 @@ export function usePushNotifications(navigationRef) {
 
   useEffect(() => {
     if (status !== 'authenticated') return;
-    registerForPush().catch(() => {});
+    // Request permission + register the token with the backend after login (F §1).
+    registerAndSyncPushToken().catch(() => {});
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response?.notification?.request?.content?.data || {};

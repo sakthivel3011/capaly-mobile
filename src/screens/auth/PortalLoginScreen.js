@@ -68,15 +68,17 @@ export default function PortalLoginScreen({ navigation, route }) {
   });
 
   const onSubmit = async (values) => {
+    if (submitting) return; // prevent double submit
     setSubmitting(true);
     try {
       const payload = { companyCode: company.companyCode, identifier: values.identifier.trim(), password: values.password };
+      // The store only flips to "authenticated" on a successful token response,
+      // so a wrong password can never navigate into a dashboard.
       if (isDept) await departmentLogin(payload, true);
       else await employeeLogin(payload, true);
     } catch (err) {
-      const data = err?.response?.data;
-      if (data?.portal && data.portal !== portal) toast.warning(data.message || 'This account belongs to a different portal.');
-      else toast.error(apiError(err, 'Invalid login details'));
+      // Stay on this screen, show one clear message, never suggest another portal.
+      toast.error(apiError(err, 'Invalid email/user ID or password.'));
     } finally {
       setSubmitting(false);
     }
@@ -173,9 +175,11 @@ export default function PortalLoginScreen({ navigation, route }) {
                   <ControlledField control={regControl} name="lastName" label="Last name" placeholder="Doe" style={styles.rowItem}
                     leftIcon={<User size={18} color={colors.textMuted} />} focusBorderColor={C} />
                 </View>
-                <ControlledField control={regControl} name="email" label="Email" placeholder="you@company.com" autoCapitalize="none"
+                <ControlledField control={regControl} name="email" label="Email" placeholder="you@company.com"
+                  autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress"
+                  keyboardType="email-address" editable
                   onFocus={onFieldFocus}
-                  keyboardType="email-address" leftIcon={<Mail size={18} color={colors.textMuted} />} focusBorderColor={C} />
+                  leftIcon={<Mail size={18} color={colors.textMuted} />} focusBorderColor={C} />
                 <ControlledField control={regControl} name="phone" label="Phone" placeholder="e.g. +1234567890" autoCapitalize="none"
                   onFocus={onFieldFocus}
                   keyboardType="phone-pad" leftIcon={<Phone size={18} color={colors.textMuted} />} focusBorderColor={C} />

@@ -19,6 +19,8 @@ import SelectField from '../../components/ui/SelectField';
 import DateField from '../../components/ui/DateField';
 import Button from '../../components/ui/Button';
 import AttachmentPicker from '../../components/domain/AttachmentPicker';
+import DraftBanner from '../../components/ui/DraftBanner';
+import { useFormDraft } from '../../hooks/useFormDraft';
 
 const TYPES = ['Injury', 'Near Miss', 'Property Damage', 'Environmental', 'Fire / Explosion', 'Chemical Spill', 'Equipment Failure', 'Security', 'Other'];
 const SEVERITIES = ['Critical', 'High', 'Medium', 'Low'];
@@ -40,15 +42,17 @@ export default function ReportIncidentScreen({ navigation }) {
   const [files, setFiles] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
-  const { control, handleSubmit } = useForm({
+  const { control, handleSubmit, watch, reset, getValues } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
       title: '', type: '', severity: '', dateOccurred: new Date().toISOString(),
       location: '', description: '', immediateAction: '',
     },
   });
+  const draft = useFormDraft('incident', { watch, reset });
 
   const onSubmit = async (values) => {
+    if (submitting) return; // guard against a double tap before the button disables
     setSubmitting(true);
     try {
       const form = new FormData();
@@ -56,8 +60,12 @@ export default function ReportIncidentScreen({ navigation }) {
       files.forEach((f) => {
         form.append('attachments', { uri: f.uri, name: f.name, type: f.mimeType });
       });
-      await incidentApi.empReport(form);
-      toast.success('Incident reported successfully');
+      const created = await incidentApi.empReport(form);
+      const ref = created?.incidentNo ? ` (${created.incidentNo})` : '';
+      toast.success(`Incident reported successfully${ref}`);
+      // Incident is saved even if an attachment fails — warn so it can be retried.
+      if (created?.attachmentWarning) toast.warning(created.attachmentWarning);
+      draft.clear();
       navigation.goBack();
     } catch (err) {
       toast.error(apiError(err, 'Could not submit the report'));
@@ -70,6 +78,7 @@ export default function ReportIncidentScreen({ navigation }) {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <AppHeader title="Report Incident" subtitle="Capture what happened" onBack={() => navigation.goBack()} />
       <KeyboardAwareScroll contentContainerStyle={styles.scroll}>
+        <DraftBanner draft={draft} getValues={getValues} accent={accent} />
         <SectionCard icon={FileText} title="Incident details">
           <ControlledField control={control} name="title" label="Title" placeholder="e.g. Slip near loading bay"
             leftIcon={<Type size={18} color={colors.textMuted} />} />

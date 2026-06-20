@@ -1,53 +1,18 @@
 import React from 'react';
 import { View, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { Sun, Moon, Smartphone, KeyRound, Bell, Info, ChevronRight, Palette, Building2 } from 'lucide-react-native';
+import { KeyRound, Bell, Info, ChevronRight, Building2 } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
-import { useAccent } from '../../theme/accent';
 import AppHeader from '../../components/ui/AppHeader';
 import Card from '../../components/ui/Card';
 import Text from '../../components/ui/Text';
 
-const THEMES = [
-  { key: 'light', label: 'Light', icon: Sun },
-  { key: 'dark', label: 'Dark', icon: Moon },
-  { key: 'system', label: 'System', icon: Smartphone },
-];
-
 export default function SettingsScreen({ navigation }) {
-  const { colors, preference, setThemePreference } = useTheme();
-  const accent = useAccent();
+  const { colors } = useTheme();
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <AppHeader title="Settings" onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text variant="small" color="textMuted" style={styles.sectionLabel}>APPEARANCE</Text>
-        <Card>
-          <View style={styles.cardHeader}>
-            <Palette size={18} color={colors.primary} />
-            <Text variant="title" style={{ marginLeft: 10 }}>Theme</Text>
-          </View>
-          <View style={styles.themeRow}>
-            {THEMES.map((t) => {
-              const Icon = t.icon;
-              const active = preference === t.key;
-              return (
-                <Pressable
-                  key={t.key}
-                  onPress={() => setThemePreference(t.key)}
-                  style={[
-                    styles.themeOption,
-                    { backgroundColor: active ? accent : colors.surfaceAlt, borderColor: active ? accent : colors.border },
-                  ]}
-                >
-                  <Icon size={22} color={active ? '#fff' : colors.textMuted} />
-                  <Text variant="small" color={active ? '#FFFFFF' : 'textMuted'} style={{ marginTop: 8 }}>{t.label}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </Card>
-
         <Text variant="small" color="textMuted" style={styles.sectionLabel}>ACCOUNT</Text>
         <Card padded={false}>
           <View style={styles.menuPad}>

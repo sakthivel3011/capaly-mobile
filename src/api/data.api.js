@@ -58,6 +58,17 @@ export const inspectionApi = {
   deptList: () => api.get('/department/inspections').then((r) => r.data),
 };
 
+// ---- Company workflows ----------------------------------------------------
+export const workflowApi = {
+  // Company-scoped workflows for the logged-in user (employee/department too).
+  myCompany: () => api.get('/workflows/my-company').then((r) => r.data),
+};
+
+// ---- Company-wide incident options (for linking Investigation/CAPA/Inspection)
+export const companyApi = {
+  incidentSelectOptions: () => api.get('/company/incidents/select-options').then((r) => r.data),
+};
+
 // ---- Action plans / tasks -------------------------------------------------
 export const actionPlanApi = {
   deptList: (params) => api.get('/department/action-plan', { params }).then((r) => r.data),
@@ -81,6 +92,14 @@ export const notificationApi = {
   markRead: (id) => api.patch(`/notifications/${id}/read`).then((r) => r.data),
   markAllRead: () => api.patch('/notifications/mark-all-read').then((r) => r.data),
   remove: (id) => api.delete(`/notifications/${id}`).then((r) => r.data),
+  // Push a test notification to the logged-in user's own device.
+  selfTestPush: () => api.post('/notifications/test-push/self').then((r) => r.data),
+};
+
+// ---- Push tokens ----------------------------------------------------------
+export const userApi = {
+  saveFcmToken: (fcmToken, devicePlatform) =>
+    api.post('/users/fcm-token', { fcmToken, devicePlatform }).then((r) => r.data),
 };
 
 // ---- Reports --------------------------------------------------------------

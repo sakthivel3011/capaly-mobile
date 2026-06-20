@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { Search, ClipboardCheck, ShieldCheck, Send, AlignLeft } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAccents } from '../../theme/accent';
-import { incidentApi, investigationApi, capaApi, inspectionApi } from '../../api/data.api';
+import { companyApi, investigationApi, capaApi, inspectionApi } from '../../api/data.api';
 import { apiError } from '../../api/client';
 import { useAsync } from '../../hooks/useAsync';
 import { useToast } from '../../components/feedback/ToastProvider';
@@ -16,6 +16,8 @@ import SelectField from '../../components/ui/SelectField';
 import SearchSelectField from '../../components/ui/SearchSelectField';
 import DateField from '../../components/ui/DateField';
 import Button from '../../components/ui/Button';
+import DraftBanner from '../../components/ui/DraftBanner';
+import { useFormDraft } from '../../hooks/useFormDraft';
 import { asArray } from '../../utils/format';
 
 // Config-driven employee report form for Investigation / CAPA / Inspection.
@@ -54,8 +56,9 @@ const MODULES = {
     title: 'Report Inspection',
     icon: ShieldCheck,
     needsIncident: true,        // show the field…
-    incidentRequired: false,    // …but optional
-    persistIncident: false,     // inspections aren't stored against an incident
+    incidentRequired: true,     // …and require it (C §3 — link to an incident)
+    persistIncident: true,      // store the inspection against the incident
+    incidentKey: 'incidentId',
     submit: (body) => inspectionApi.create(body),
     fields: [
       { name: 'title', label: 'Inspection title', placeholder: 'e.g. Monthly fire safety check', required: true },
@@ -78,7 +81,8 @@ export default function ReportModuleScreen({ navigation, route }) {
   const [submitting, setSubmitting] = useState(false);
 
   // Pull the whole company's incidents so the picker can target older ones too.
-  const { data: incidentsData } = useAsync(() => incidentApi.empCompanyList(), [], { immediate: cfg.needsIncident });
+  // Uses the shared select-options endpoint so it works for every company role.
+  const { data: incidentsData } = useAsync(() => companyApi.incidentSelectOptions(), [], { immediate: cfg.needsIncident });
   const incidents = useMemo(() => asArray(incidentsData), [incidentsData]);
   const [incidentDisplay, setIncidentDisplay] = useState('');
 
@@ -92,12 +96,22 @@ export default function ReportModuleScreen({ navigation, route }) {
   };
   const mapIncident = (i) => ({ label: `${i.incidentNo} · ${i.title}`, sublabel: i.location || i.status, value: i.id });
 
-  const { control, handleSubmit, setValue, watch } = useForm({
+  const { control, handleSubmit, setValue, watch, reset, getValues } = useForm({
     defaultValues: {
-      incidentId: '', status: cfg.status[0], due: '',
+      incidentId: route.params?.incidentId || '', status: cfg.status[0], due: '',
       ...Object.fromEntries(cfg.fields.map((f) => [f.name, ''])),
     },
   });
+  const draft = useFormDraft(moduleKey, { watch, reset });
+
+  // Preselect + show the incident passed in from the incident detail screen.
+  useEffect(() => {
+    if (route.params?.incidentId) {
+      setValue('incidentId', route.params.incidentId);
+      if (route.params?.incidentNo) setIncidentDisplay(route.params.incidentNo);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route.params?.incidentId]);
 
   const onSubmit = async (values) => {
     if (cfg.incidentRequired && !values.incidentId) {
@@ -112,6 +126,7 @@ export default function ReportModuleScreen({ navigation, route }) {
       if (cfg.hasDue && values.due) body[cfg.dueKey || 'dueDate'] = values.due;
       await cfg.submit(body);
       toast.success(`${cfg.title.replace('Report ', '')} submitted`);
+      draft.clear();
       navigation.goBack();
     } catch (err) {
       toast.error(apiError(err, 'Could not submit'));
@@ -124,6 +139,7 @@ export default function ReportModuleScreen({ navigation, route }) {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <AppHeader title={cfg.title} onBack={() => navigation.goBack()} />
       <KeyboardAwareScroll contentContainerStyle={styles.scroll}>
+        <DraftBanner draft={draft} getValues={getValues} accent={accent} />
         <SectionCard icon={cfg.icon} title="Details">
           {cfg.needsIncident ? (
             <Controller control={control} name="incidentId" render={({ field: { value, onChange } }) => (

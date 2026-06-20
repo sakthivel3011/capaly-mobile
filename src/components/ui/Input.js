@@ -22,6 +22,10 @@ export function TextField({
   multiline = false,
   keyboardType,
   autoCapitalize = 'sentences',
+  autoCorrect,
+  autoComplete,
+  textContentType,
+  returnKeyType,
   editable = true,
   style,
   focusBorderColor,
@@ -62,7 +66,12 @@ export function TextField({
           multiline={multiline}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
+          autoCorrect={autoCorrect}
+          autoComplete={autoComplete}
+          textContentType={textContentType}
+          returnKeyType={returnKeyType}
           editable={editable}
+          pointerEvents="auto"
           style={[
             styles.input,
             {

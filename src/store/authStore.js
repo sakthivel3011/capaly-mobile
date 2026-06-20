@@ -79,11 +79,19 @@ export const useAuthStore = create((set, get) => ({
     return res.user;
   },
 
+  // Drop any stale token before a fresh sign-in attempt so a failed login can
+  // never leave a previous session active (B: login validation).
+  async _clearStaleSession() {
+    await tokenStore.clear();
+  },
+
   async departmentLogin(payload, remember = true) {
+    await get()._clearStaleSession();
     const res = await authApi.departmentLogin(payload);
     return get()._applyLogin(res, { remember });
   },
   async employeeLogin(payload, remember = true) {
+    await get()._clearStaleSession();
     const res = await authApi.employeeLogin(payload);
     return get()._applyLogin(res, { remember });
   },
