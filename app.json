@@ -2,7 +2,7 @@
   "expo": {
     "name": "CAPALY",
     "slug": "capaly-mobile",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/app-icon.png",
     "scheme": "capaly",
@@ -28,7 +28,7 @@
     "android": {
       "package": "in.capaly.beta",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 3,
+      "versionCode": 4,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
