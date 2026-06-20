@@ -27,7 +27,7 @@
     },
     "android": {
       "package": "in.capaly.app",
-      "versionCode": 3,58
+      "versionCode": 3,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
