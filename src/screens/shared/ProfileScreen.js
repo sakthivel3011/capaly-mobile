@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Pressable, ScrollView, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import Constants from 'expo-constants';
 import {
   Mail, Phone, IdCard, Building2, Settings as SettingsIcon, KeyRound, Bell, LogOut, Camera, ChevronRight, Pencil, Briefcase,
-  GitBranch, BellRing,
+  GitBranch, BellRing, Sun, Moon, Smartphone, Palette,
 } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAccents } from '../../theme/accent';
@@ -23,7 +24,7 @@ import { Badge } from '../../components/ui/Badge';
 import { fullName, resolveImageUrl } from '../../utils/format';
 
 export default function ProfileScreen({ navigation }) {
-  const { colors } = useTheme();
+  const { colors, preference, setThemePreference } = useTheme();
   const { accent, accentDark } = useAccents();
   const toast = useToast();
   const confirm = useConfirm();
@@ -41,6 +42,14 @@ export default function ProfileScreen({ navigation }) {
 
   const isEmployee = portalType === PORTAL.EMPLOYEE;
 
+  // App version + build, read from the embedded app config so it updates
+  // automatically whenever a new APK (with a bumped app.json) is installed (L).
+  const appVersion = Constants.expoConfig?.version || '1.0.0';
+  const appBuild = Constants.expoConfig?.android?.versionCode
+    ?? Constants.expoConfig?.ios?.buildNumber
+    ?? '—';
+  const appVersionLabel = `CAPALY Beta v${appVersion} (Build ${appBuild})`;
+
   const pickImage = async () => {
     const res = await ImagePicker.launchImageLibraryAsync({ quality: 0.6, mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1] });
     if (!res.canceled) setImage(res.assets[0]);
@@ -53,7 +62,10 @@ export default function ProfileScreen({ navigation }) {
       form.append('firstName', firstName);
       form.append('lastName', lastName);
       form.append('phone', phone || '');
-      if (image) form.append('image', { uri: image.uri, name: image.fileName || 'profile.jpg', type: image.mimeType || 'image/jpeg' });
+      // Field name must match the backend multer config (.single('profileImage')).
+      // Sending the wrong field name made multer throw "Unexpected field", which is
+      // why the upload errored and the image never appeared (G).
+      if (image) form.append('profileImage', { uri: image.uri, name: image.fileName || 'profile.jpg', type: image.mimeType || 'image/jpeg' });
       if (isEmployee) await profileApi.employeeUpdate(form);
       else await profileApi.update(form);
       await refreshMe();
@@ -153,6 +165,43 @@ export default function ProfileScreen({ navigation }) {
           </Card>
         )}
 
+        {/* Appearance / theme (K). Light / Dark / System; persisted globally by
+            the ThemeProvider and applied app-wide. */}
+        <Card style={styles.section}>
+          <View style={styles.themeHeader}>
+            <Palette size={18} color={colors.textMuted} />
+            <Text variant="title" style={{ marginLeft: 8 }}>Appearance</Text>
+          </View>
+          <View style={styles.themeRow}>
+            {[
+              { key: 'light', label: 'Light', icon: Sun },
+              { key: 'dark', label: 'Dark', icon: Moon },
+              { key: 'system', label: 'System', icon: Smartphone },
+            ].map((opt) => {
+              const active = preference === opt.key;
+              const Icon = opt.icon;
+              return (
+                <Pressable
+                  key={opt.key}
+                  onPress={() => setThemePreference(opt.key)}
+                  style={[
+                    styles.themeOption,
+                    {
+                      borderColor: active ? accent : colors.border,
+                      backgroundColor: active ? `${accent}14` : colors.surfaceAlt,
+                    },
+                  ]}
+                >
+                  <Icon size={20} color={active ? accent : colors.textMuted} />
+                  <Text variant="small" style={{ marginTop: 6, color: active ? accent : colors.textMuted, fontWeight: active ? '700' : '500' }}>
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </Card>
+
         <Card style={styles.section} padded={false}>
           <View style={styles.menuPad}>
             <MenuRow icon={GitBranch} label="Company Workflow" onPress={() => navigation.navigate('Workflow')} />
@@ -171,7 +220,12 @@ export default function ProfileScreen({ navigation }) {
           style={styles.section}
         />
 
-        <Text variant="caption" color="textFaint" style={styles.version}>CAPALY Mobile · v1.0.0</Text>
+        <View style={styles.versionWrap}>
+          <Text variant="caption" color="textFaint" style={styles.version}>{appVersionLabel}</Text>
+          <Text variant="caption" color="textFaint" style={[styles.version, { marginTop: 2 }]}>
+            Updates require installing the latest beta APK.
+          </Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -209,5 +263,6 @@ const styles = StyleSheet.create({
   menuRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 15 },
   menuIcon: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   editBtn: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  version: { textAlign: 'center', marginTop: 24 },
+  versionWrap: { marginTop: 24 },
+  version: { textAlign: 'center' },
 });

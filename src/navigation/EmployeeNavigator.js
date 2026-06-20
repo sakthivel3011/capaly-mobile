@@ -32,6 +32,8 @@ function DashboardStack() {
       <Stack.Screen name="Dashboard" component={DashboardScreen} />
       <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
       <Stack.Screen name="ReportIncident" component={ReportIncidentScreen} />
+      {/* Quick actions (Investigation / CAPA / Inspection) from an incident. */}
+      <Stack.Screen name="ReportModule" component={ReportModuleScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
     </Stack.Navigator>
   );
@@ -51,6 +53,7 @@ function IncidentsStack() {
       <Stack.Screen name="Incidents" component={IncidentsScreen} />
       <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
       <Stack.Screen name="ReportIncident" component={ReportIncidentScreen} />
+      <Stack.Screen name="ReportModule" component={ReportModuleScreen} />
     </Stack.Navigator>
   );
 }
@@ -59,6 +62,7 @@ function NotificationsStack() {
     <Stack.Navigator screenOptions={stack}>
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
+      <Stack.Screen name="ReportModule" component={ReportModuleScreen} />
     </Stack.Navigator>
   );
 }
@@ -71,6 +75,9 @@ function ProfileStack() {
       <Stack.Screen name="CompanyAbout" component={CompanyAboutScreen} />
       <Stack.Screen name="Workflow" component={WorkflowScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      {/* Notifications opened from Profile can deep-link into an incident. */}
+      <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
+      <Stack.Screen name="ReportModule" component={ReportModuleScreen} />
     </Stack.Navigator>
   );
 }

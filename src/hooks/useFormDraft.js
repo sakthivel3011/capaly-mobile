@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../store/authStore';
 
@@ -16,6 +16,12 @@ export function useFormDraft(formType, { watch, reset } = {}) {
   const [hasDraft, setHasDraft] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // Pending debounce timer + a generation counter. clear() bumps the generation
+  // and cancels the timer so an in-flight auto-save can never resurrect a draft
+  // that was just cleared or submitted (E: old draft reappeared after submit).
+  const timerRef = useRef(null);
+  const genRef = useRef(0);
+
   // Detect an existing draft on mount.
   useEffect(() => {
     let active = true;
@@ -26,21 +32,24 @@ export function useFormDraft(formType, { watch, reset } = {}) {
   // Auto-save while typing (debounced), skipping an empty form.
   useEffect(() => {
     if (!watch) return undefined;
-    let timer;
     const sub = watch((values) => {
       const meaningful = Object.values(values || {}).some((v) => v !== '' && v != null && v !== false);
       if (!meaningful) return;
-      clearTimeout(timer);
-      timer = setTimeout(async () => {
+      clearTimeout(timerRef.current);
+      const gen = genRef.current;
+      timerRef.current = setTimeout(async () => {
+        // Drop this save if the draft was cleared/submitted after it was scheduled.
+        if (gen !== genRef.current) return;
         try {
           await AsyncStorage.setItem(storageKey, JSON.stringify({ values, savedAt: Date.now() }));
+          if (gen !== genRef.current) return; // cleared while the write was in flight
           setHasDraft(true);
           setSaved(true);
           setTimeout(() => setSaved(false), 1500);
         } catch { /* ignore */ }
       }, 700);
     });
-    return () => { clearTimeout(timer); sub?.unsubscribe?.(); };
+    return () => { clearTimeout(timerRef.current); sub?.unsubscribe?.(); };
   }, [watch, storageKey]);
 
   const restore = useCallback(async () => {
@@ -63,8 +72,13 @@ export function useFormDraft(formType, { watch, reset } = {}) {
   }, [storageKey]);
 
   const clear = useCallback(async () => {
+    // Invalidate any scheduled/in-flight auto-save, then remove the key entirely
+    // so the draft is gone for good (E: Clear Draft / submit must fully remove it).
+    genRef.current += 1;
+    clearTimeout(timerRef.current);
     try { await AsyncStorage.removeItem(storageKey); } catch { /* ignore */ }
     setHasDraft(false);
+    setSaved(false);
   }, [storageKey]);
 
   return { hasDraft, saved, restore, saveNow, clear };

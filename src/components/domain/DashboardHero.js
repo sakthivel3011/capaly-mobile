@@ -51,7 +51,7 @@ export default function DashboardHero({ user, subtitle, badge, role, onBellPress
       <View style={styles.topRow}>
         <View style={styles.userRow}>
           <View style={styles.avatarRing}>
-            <Avatar uri={resolveImageUrl(user?.profileImageUrl || user?.avatarUrl)} name={fullName(user)} size={44} />
+            <Avatar uri={resolveImageUrl(user?.profileImageUrl || user?.avatarUrl)} name={fullName(user)} size={44} variant="onAccent" />
           </View>
           <View style={styles.userText}>
             <Text variant="caption" color="rgba(255,255,255,0.78)">{greeting()},</Text>

@@ -58,6 +58,15 @@ export const inspectionApi = {
   deptList: () => api.get('/department/inspections').then((r) => r.data),
 };
 
+// ---- Department portal (forwarding / mapping) -----------------------------
+export const departmentApi = {
+  // Sibling departments in the same company — forward targets (M §2).
+  departments: () => api.get('/department/departments').then((r) => r.data),
+  // Forward / pass an incident to another department (M §5).
+  forward: (incidentId, body) =>
+    api.post(`/department/incidents/${incidentId}/forward`, body).then((r) => r.data),
+};
+
 // ---- Company workflows ----------------------------------------------------
 export const workflowApi = {
   // Company-scoped workflows for the logged-in user (employee/department too).

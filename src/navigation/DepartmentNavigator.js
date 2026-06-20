@@ -10,6 +10,7 @@ import DashboardScreen from '../screens/shared/DashboardScreen';
 import IncidentsScreen from '../screens/shared/IncidentsScreen';
 import IncidentDetailScreen from '../screens/shared/IncidentDetailScreen';
 import ReportModuleScreen from '../screens/employee/ReportModuleScreen';
+import ForwardIncidentScreen from '../screens/department/ForwardIncidentScreen';
 import ActionPlanScreen from '../screens/department/ActionPlanScreen';
 import ActionPlanDetailScreen from '../screens/department/ActionPlanDetailScreen';
 import CreateActionPlanScreen from '../screens/department/CreateActionPlanScreen';
@@ -29,6 +30,9 @@ function DashboardStack() {
     <Stack.Navigator screenOptions={stack}>
       <Stack.Screen name="Dashboard" component={DashboardScreen} />
       <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
+      {/* Quick actions from an incident opened off the dashboard. */}
+      <Stack.Screen name="ReportModule" component={ReportModuleScreen} />
+      <Stack.Screen name="ForwardIncident" component={ForwardIncidentScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
     </Stack.Navigator>
   );
@@ -38,8 +42,10 @@ function IncidentsStack() {
     <Stack.Navigator screenOptions={stack}>
       <Stack.Screen name="Incidents" component={IncidentsScreen} />
       <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
-      {/* Department can add Investigation / CAPA / Inspection against an incident. */}
+      {/* Department can add Investigation / CAPA / Inspection against an incident,
+          and forward it to another department. */}
       <Stack.Screen name="ReportModule" component={ReportModuleScreen} />
+      <Stack.Screen name="ForwardIncident" component={ForwardIncidentScreen} />
     </Stack.Navigator>
   );
 }
@@ -68,6 +74,10 @@ function ProfileStack() {
       <Stack.Screen name="CompanyAbout" component={CompanyAboutScreen} />
       <Stack.Screen name="Workflow" component={WorkflowScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      {/* Notifications opened from Profile can deep-link into an incident. */}
+      <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
+      <Stack.Screen name="ReportModule" component={ReportModuleScreen} />
+      <Stack.Screen name="ForwardIncident" component={ForwardIncidentScreen} />
     </Stack.Navigator>
   );
 }

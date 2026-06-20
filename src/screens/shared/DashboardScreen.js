@@ -73,7 +73,9 @@ export default function DashboardScreen({ navigation }) {
 
   const view = useMemo(() => normalize(portal, data), [portal, data]);
 
-  const subtitle = portal.isDept ? user?.department?.name : portal.isEmployee ? user?.employeeId : portal.label;
+  // Employee ID is already shown once as the hero badge, so don't repeat it as
+  // the subtitle (C: employee ID was rendered twice in the top bar).
+  const subtitle = portal.isDept ? user?.department?.name : portal.isEmployee ? null : portal.label;
 
   const goNotifications = () => navigation.navigate('Notifications');
   const openIncident = (incident) => navigation.navigate('IncidentDetail', { id: incident.id, title: incident.incidentNo });
@@ -88,7 +90,7 @@ export default function DashboardScreen({ navigation }) {
         <DashboardHero
           user={user}
           subtitle={subtitle}
-          badge={portal.isEmployee ? user?.employeeId : null}
+          badge={portal.isEmployee && user?.employeeId ? `ID ${user.employeeId}` : null}
           role={portal.isEmployee ? 'Employee' : portal.isDept ? 'Department' : portal.label}
           onBellPress={goNotifications}
         />

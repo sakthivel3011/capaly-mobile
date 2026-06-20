@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { Search, ClipboardCheck, ShieldCheck, Send, AlignLeft } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
@@ -11,6 +11,7 @@ import { useToast } from '../../components/feedback/ToastProvider';
 import AppHeader from '../../components/ui/AppHeader';
 import KeyboardAwareScroll from '../../components/ui/KeyboardAwareScroll';
 import SectionCard from '../../components/ui/SectionCard';
+import Text from '../../components/ui/Text';
 import { TextField } from '../../components/ui/Input';
 import SelectField from '../../components/ui/SelectField';
 import SearchSelectField from '../../components/ui/SearchSelectField';
@@ -81,20 +82,28 @@ export default function ReportModuleScreen({ navigation, route }) {
   const [submitting, setSubmitting] = useState(false);
 
   // Pull the whole company's incidents so the picker can target older ones too.
-  // Uses the shared select-options endpoint so it works for every company role.
-  const { data: incidentsData } = useAsync(() => companyApi.incidentSelectOptions(), [], { immediate: cfg.needsIncident });
+  // Uses the shared select-options endpoint so it works for every company role
+  // (F: related-incident list must always load; backend scopes to the company).
+  const { data: incidentsData, loading: incidentsLoading, error: incidentsError, reload: reloadIncidents } =
+    useAsync(() => companyApi.incidentSelectOptions(), [], { immediate: cfg.needsIncident });
   const incidents = useMemo(() => asArray(incidentsData), [incidentsData]);
   const [incidentDisplay, setIncidentDisplay] = useState('');
 
-  // Client-side search over the already-loaded incident list.
+  // Client-side search over the already-loaded incident list (incidentNo + title
+  // + status + severity, per F §7).
   const searchIncidents = (q) => {
     const term = (q || '').toLowerCase().trim();
     if (!term) return incidents;
     return incidents.filter((i) =>
-      `${i.incidentNo || ''} ${i.title || ''} ${i.location || ''}`.toLowerCase().includes(term)
+      `${i.incidentNo || ''} ${i.title || ''} ${i.location || ''} ${i.status || ''} ${i.severity || ''}`
+        .toLowerCase().includes(term)
     );
   };
-  const mapIncident = (i) => ({ label: `${i.incidentNo} · ${i.title}`, sublabel: i.location || i.status, value: i.id });
+  const mapIncident = (i) => ({
+    label: `${i.incidentNo} · ${i.title}`,
+    sublabel: [i.severity, i.status].filter(Boolean).join(' · ') || i.location || null,
+    value: i.id,
+  });
 
   const { control, handleSubmit, setValue, watch, reset, getValues } = useForm({
     defaultValues: {
@@ -139,7 +148,7 @@ export default function ReportModuleScreen({ navigation, route }) {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <AppHeader title={cfg.title} onBack={() => navigation.goBack()} />
       <KeyboardAwareScroll contentContainerStyle={styles.scroll}>
-        <DraftBanner draft={draft} getValues={getValues} accent={accent} />
+        <DraftBanner draft={draft} getValues={getValues} onClear={() => { reset(); setIncidentDisplay(''); }} accent={accent} />
         <SectionCard icon={cfg.icon} title="Details">
           {cfg.needsIncident ? (
             <Controller control={control} name="incidentId" render={({ field: { value, onChange } }) => (
@@ -154,6 +163,19 @@ export default function ReportModuleScreen({ navigation, route }) {
                 leftIcon={<Search size={18} color={colors.textMuted} />}
               />
             )} />
+          ) : null}
+
+          {/* Loading / retry for the related-incident list (F §9). */}
+          {cfg.needsIncident && incidentsLoading ? (
+            <Text variant="caption" color="textMuted" style={styles.incidentHint}>Loading incidents…</Text>
+          ) : null}
+          {cfg.needsIncident && !incidentsLoading && incidentsError && incidents.length === 0 ? (
+            <View style={styles.retryRow}>
+              <Text variant="caption" color="danger" style={{ flex: 1 }}>Couldn’t load incidents.</Text>
+              <Pressable onPress={reloadIncidents} hitSlop={8} style={[styles.retryBtn, { borderColor: accent }]}>
+                <Text variant="caption" style={{ color: accent, fontWeight: '700' }}>Retry</Text>
+              </Pressable>
+            </View>
           ) : null}
 
           {cfg.fields.map((f) => (
@@ -181,4 +203,7 @@ export default function ReportModuleScreen({ navigation, route }) {
 
 const styles = StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 40 },
+  incidentHint: { marginTop: -6, marginBottom: 10, marginLeft: 2 },
+  retryRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: -6, marginBottom: 10 },
+  retryBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1.5 },
 });

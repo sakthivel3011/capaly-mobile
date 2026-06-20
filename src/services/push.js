@@ -40,6 +40,17 @@ export async function registerForPush() {
     return null;
   }
 
+  // The backend delivers via Firebase Cloud Messaging, so prefer the NATIVE FCM
+  // device token. (The Expo token is a different format FCM cannot deliver to.)
+  // Requires the build to be Firebase-configured (google-services.json); if it
+  // isn't, this throws and we fall back to the Expo token.
+  try {
+    const device = await Notifications.getDevicePushTokenAsync(); // { type, data }
+    if (device?.data && typeof device.data === 'string') return device.data;
+  } catch (e) {
+    console.warn('No native (FCM) device push token — is Firebase configured in this build?', e?.message);
+  }
+
   try {
     const token = await Notifications.getExpoPushTokenAsync();
     return token.data;

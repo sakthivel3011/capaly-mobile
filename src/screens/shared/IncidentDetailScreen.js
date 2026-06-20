@@ -4,7 +4,7 @@ import {
   LayoutAnimation, Platform, UIManager,
 } from 'react-native';
 import {
-  Search, ClipboardCheck, ListTodo, Clock, FileText, GitBranch, ChevronDown,
+  Search, ClipboardCheck, ListTodo, Clock, FileText, GitBranch, ChevronDown, Forward,
 } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAccent } from '../../theme/accent';
@@ -129,23 +129,38 @@ export default function IncidentDetailScreen({ navigation, route }) {
               </View>
             </View>
 
-            {/* Department actions — add a workflow report against this incident */}
-            {portal.isDept && incident.id ? (
-              <View style={styles.actionBar}>
-                {[
-                  { label: 'Investigation', module: 'investigation' },
-                  { label: 'CAPA', module: 'capa' },
-                  { label: 'Inspection', module: 'inspection' },
-                ].map((a) => (
+            {/* Quick actions — add a workflow report against this incident. Shown
+                for Department and Employee portals (D); the related incident is
+                preselected in the form via incidentId. */}
+            {(portal.isDept || portal.isEmployee) && incident.id ? (
+              <>
+                <View style={styles.actionBar}>
+                  {[
+                    { label: 'Investigation', module: 'investigation' },
+                    { label: 'CAPA', module: 'capa' },
+                    { label: 'Inspection', module: 'inspection' },
+                  ].map((a) => (
+                    <Pressable
+                      key={a.module}
+                      onPress={() => navigation.navigate('ReportModule', { module: a.module, incidentId: incident.id, incidentNo: incident.incidentNo })}
+                      style={({ pressed }) => [styles.actionBtn, { borderColor: ACCENT, backgroundColor: `${ACCENT}10` }, pressed && { opacity: 0.7 }]}
+                    >
+                      <Text variant="caption" style={{ color: ACCENT, fontWeight: '700' }}>+ {a.label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+
+                {/* Forward / pass the incident to another department (M, dept only). */}
+                {portal.isDept ? (
                   <Pressable
-                    key={a.module}
-                    onPress={() => navigation.navigate('ReportModule', { module: a.module, incidentId: incident.id, incidentNo: incident.incidentNo })}
-                    style={({ pressed }) => [styles.actionBtn, { borderColor: ACCENT, backgroundColor: `${ACCENT}10` }, pressed && { opacity: 0.7 }]}
+                    onPress={() => navigation.navigate('ForwardIncident', { id: incident.id, incidentNo: incident.incidentNo, title: incident.title })}
+                    style={({ pressed }) => [styles.forwardBtn, { borderColor: ACCENT }, pressed && { opacity: 0.7 }]}
                   >
-                    <Text variant="caption" style={{ color: ACCENT, fontWeight: '700' }}>+ {a.label}</Text>
+                    <Forward size={16} color={ACCENT} />
+                    <Text variant="caption" style={{ color: ACCENT, fontWeight: '700' }}>Forward to another department</Text>
                   </Pressable>
-                ))}
-              </View>
+                ) : null}
+              </>
             ) : null}
 
             <View style={styles.sections}>
@@ -266,6 +281,7 @@ const styles = StyleSheet.create({
   badgeRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
   actionBar: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginTop: 16 },
   actionBtn: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10, borderWidth: 1.5 },
+  forwardBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginHorizontal: 16, marginTop: 10, paddingVertical: 11, borderRadius: 10, borderWidth: 1.5 },
   sections: { paddingHorizontal: 16, marginTop: 18, gap: 12 },
   section: { borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
   secHeader: { flexDirection: 'row', alignItems: 'center', padding: 14 },

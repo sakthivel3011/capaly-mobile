@@ -1,13 +1,40 @@
 import React from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '../../theme/ThemeProvider';
+import { useToast } from '../feedback/ToastProvider';
+import { useConfirm } from '../feedback/ConfirmProvider';
 import Text from './Text';
 
 // Compact draft controls for mobile report forms (I). Shows a Continue/Discard
 // banner when a saved draft exists, plus Save / Clear actions.
-export default function DraftBanner({ draft, getValues, accent = '#233DFF' }) {
+//
+// `onClear` (optional) lets the host form reset its fields when the draft is
+// discarded so the visible form is emptied along with the stored draft.
+export default function DraftBanner({ draft, getValues, onClear, accent = '#233DFF' }) {
   const { colors, radius } = useTheme();
+  const toast = useToast();
+  const confirm = useConfirm();
   if (!draft) return null;
+
+  // E §7: confirm before clearing, remove the AsyncStorage key, reset the form,
+  // then toast "Draft cleared".
+  const clearDraft = async () => {
+    const ok = await confirm({
+      title: 'Clear draft?',
+      message: 'This will remove the saved draft and clear the form. This cannot be undone.',
+      confirmText: 'Clear draft',
+      danger: true,
+    });
+    if (!ok) return;
+    await draft.clear();
+    onClear?.();
+    toast.success('Draft cleared');
+  };
+
+  const saveDraft = async () => {
+    await draft.saveNow(getValues?.());
+    toast.success('Draft saved');
+  };
 
   return (
     <View style={{ marginBottom: 14 }}>
@@ -19,17 +46,17 @@ export default function DraftBanner({ draft, getValues, accent = '#233DFF' }) {
           <Pressable onPress={() => draft.restore()} style={[styles.btn, { backgroundColor: '#F59E0B' }]}>
             <Text variant="caption" style={{ color: '#fff', fontWeight: '700' }}>Continue</Text>
           </Pressable>
-          <Pressable onPress={() => draft.clear()} style={[styles.btn, { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#FCD34D' }]}>
+          <Pressable onPress={clearDraft} style={[styles.btn, { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#FCD34D' }]}>
             <Text variant="caption" style={{ color: '#92400E', fontWeight: '700' }}>Discard</Text>
           </Pressable>
         </View>
       ) : null}
       <View style={styles.actions}>
         {draft.saved ? <Text variant="caption" style={{ color: '#16A34A', fontWeight: '700', marginRight: 'auto' }}>Draft saved</Text> : null}
-        <Pressable onPress={() => draft.saveNow(getValues?.())} style={[styles.smallBtn, { borderColor: colors.border }]}>
+        <Pressable onPress={saveDraft} style={[styles.smallBtn, { borderColor: colors.border }]}>
           <Text variant="caption" style={{ color: colors.textMuted, fontWeight: '700' }}>Save Draft</Text>
         </Pressable>
-        <Pressable onPress={() => draft.clear()} style={[styles.smallBtn, { borderColor: colors.border }]}>
+        <Pressable onPress={clearDraft} style={[styles.smallBtn, { borderColor: colors.border }]}>
           <Text variant="caption" style={{ color: colors.textMuted, fontWeight: '700' }}>Clear Draft</Text>
         </Pressable>
       </View>

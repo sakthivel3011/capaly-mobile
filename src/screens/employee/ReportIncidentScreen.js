@@ -78,7 +78,7 @@ export default function ReportIncidentScreen({ navigation }) {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <AppHeader title="Report Incident" subtitle="Capture what happened" onBack={() => navigation.goBack()} />
       <KeyboardAwareScroll contentContainerStyle={styles.scroll}>
-        <DraftBanner draft={draft} getValues={getValues} accent={accent} />
+        <DraftBanner draft={draft} getValues={getValues} onClear={() => { reset(); setFiles([]); }} accent={accent} />
         <SectionCard icon={FileText} title="Incident details">
           <ControlledField control={control} name="title" label="Title" placeholder="e.g. Slip near loading bay"
             leftIcon={<Type size={18} color={colors.textMuted} />} />
