@@ -182,6 +182,7 @@ export default function PortalLoginScreen({ navigation, route }) {
                     through ControlledField -> react-hook-form. */}
                 <ControlledField control={regControl} name="email" label="Email" placeholder="you@company.com"
                   autoCapitalize="none" autoCorrect={false} autoComplete="off"
+                  importantForAutofill="no" textContentType="none"
                   keyboardType="email-address" editable={true}
                   onFocus={onFieldFocus}
                   leftIcon={<Mail size={18} color={colors.textMuted} />} focusBorderColor={C} />

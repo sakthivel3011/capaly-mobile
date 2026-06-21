@@ -25,6 +25,7 @@ export function TextField({
   autoCorrect,
   autoComplete,
   textContentType,
+  importantForAutofill,
   returnKeyType,
   editable = true,
   style,
@@ -69,6 +70,7 @@ export function TextField({
           autoCorrect={autoCorrect}
           autoComplete={autoComplete}
           textContentType={textContentType}
+          importantForAutofill={importantForAutofill}
           returnKeyType={returnKeyType}
           editable={editable}
           pointerEvents="auto"
