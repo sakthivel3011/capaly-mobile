@@ -124,4 +124,6 @@ export const profileApi = {
     api.put('/profile', form, { headers: { 'Content-Type': 'multipart/form-data' } }).then((r) => r.data),
   employeeUpdate: (form) =>
     api.put('/employee/profile', form, { headers: { 'Content-Type': 'multipart/form-data' } }).then((r) => r.data),
+  submitFeedback: (body) =>
+    api.post('/profile/feedback', body).then((r) => r.data),
 };

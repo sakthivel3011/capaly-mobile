@@ -1,13 +1,15 @@
 import React from 'react';
 import { View, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { KeyRound, Bell, Info, ChevronRight, Building2 } from 'lucide-react-native';
+import { KeyRound, Bell, Info, ChevronRight, Building2, RefreshCw } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
+import { useAppUpdate } from '../../hooks/useAppUpdate';
 import AppHeader from '../../components/ui/AppHeader';
 import Card from '../../components/ui/Card';
 import Text from '../../components/ui/Text';
 
 export default function SettingsScreen({ navigation }) {
   const { colors } = useTheme();
+  const { checking, checkAndInstallUpdate } = useAppUpdate();
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -25,6 +27,7 @@ export default function SettingsScreen({ navigation }) {
         <Card padded={false}>
           <View style={styles.menuPad}>
             <MenuRow icon={Building2} label="About Company" onPress={() => navigation.navigate('CompanyAbout')} colors={colors} />
+            <MenuRow icon={RefreshCw} label="Check for Updates" onPress={checkAndInstallUpdate} colors={colors} />
             <Pressable style={styles.aboutRow}>
               <View style={[styles.menuIcon, { backgroundColor: colors.surfaceAlt }]}>
                 <Info size={18} color={colors.text} />

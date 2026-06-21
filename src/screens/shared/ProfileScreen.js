@@ -15,6 +15,7 @@ import { apiError } from '../../api/client';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { useConfirm } from '../../components/feedback/ConfirmProvider';
 import AppHeader from '../../components/ui/AppHeader';
+import { useAppUpdate } from '../../hooks/useAppUpdate';
 import Card from '../../components/ui/Card';
 import Text from '../../components/ui/Text';
 import Avatar from '../../components/ui/Avatar';
@@ -26,6 +27,7 @@ import { fullName, resolveImageUrl } from '../../utils/format';
 export default function ProfileScreen({ navigation }) {
   const { colors, preference, setThemePreference } = useTheme();
   const { accent, accentDark } = useAccents();
+  const { checking, checkAndInstallUpdate } = useAppUpdate();
   const toast = useToast();
   const confirm = useConfirm();
   const user = useAuthStore((s) => s.user);
@@ -220,12 +222,19 @@ export default function ProfileScreen({ navigation }) {
           style={styles.section}
         />
 
-        <View style={styles.versionWrap}>
+        <Pressable
+          onPress={checkAndInstallUpdate}
+          disabled={checking}
+          style={({ pressed }) => [
+            styles.versionWrap,
+            pressed && { opacity: 0.6 }
+          ]}
+        >
           <Text variant="caption" color="textFaint" style={styles.version}>{appVersionLabel}</Text>
-          <Text variant="caption" color="textFaint" style={[styles.version, { marginTop: 2 }]}>
-            Updates require installing the latest beta APK.
+          <Text variant="caption" style={[styles.version, { marginTop: 4, color: accent, fontWeight: '700' }]}>
+            Check for Updates
           </Text>
-        </View>
+        </Pressable>
       </ScrollView>
     </View>
   );
