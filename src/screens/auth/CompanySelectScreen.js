@@ -35,13 +35,12 @@ export default function CompanySelectScreen({ navigation, route }) {
 
   const companies = useMemo(() => {
     const list = Array.isArray(data) ? data : [];
-    const trimmed = query.trim();
-    if (trimmed.length < 3) {
-      const exactCode = list.filter((c) => c.companyCode?.toLowerCase() === trimmed.toLowerCase());
-      return exactCode.length > 0 ? exactCode : [];
-    }
-    const q = trimmed.toLowerCase();
-    return list.filter((c) => c.name?.toLowerCase().includes(q) || c.companyCode?.toLowerCase().includes(q));
+    const trimmed = query.trim().toLowerCase();
+    if (!trimmed) return list; // Show all active companies by default
+    return list.filter((c) => 
+      c.name?.toLowerCase().includes(trimmed) || 
+      c.companyCode?.toLowerCase().includes(trimmed)
+    );
   }, [data, query]);
 
   const renderItem = ({ item }) => {
@@ -100,7 +99,7 @@ export default function CompanySelectScreen({ navigation, route }) {
       <View style={[styles.sheet, { marginTop: imageHeight - 42 }]}>
         <View style={styles.searchWrap}>
           <TextField
-            placeholder="Type at least 3 letters to search…"
+            placeholder="Search company name or code..."
             value={query}
             onChangeText={setQuery}
             autoCapitalize="none"
@@ -119,24 +118,12 @@ export default function CompanySelectScreen({ navigation, route }) {
               if (companies.length > 0) navigation.navigate('PortalLogin', { portal, company: companies[0] });
             }}
           />
-          {query.trim().length > 0 && query.trim().length < 3 && (
-            <Text variant="caption" color="textMuted" style={{ marginTop: 6, marginLeft: 4 }}>
-              Type at least 3 characters to search...
-            </Text>
-          )}
         </View>
 
         {loading ? (
           <View style={styles.listPad}><SkeletonList count={6} /></View>
         ) : error ? (
           <EmptyState title="Couldn't load companies" message={error} actionTitle="Retry" onAction={refresh} />
-        ) : query.trim().length < 3 && companies.length === 0 ? (
-          <EmptyState
-            icon={Building2}
-            title="Search your company"
-            message="Type your company code or at least 3 letters to search."
-            style={{ paddingTop: 8 }}
-          />
         ) : !companies.length ? (
           <EmptyState icon={Building2} title="No companies found" message="Try a different search." />
         ) : (

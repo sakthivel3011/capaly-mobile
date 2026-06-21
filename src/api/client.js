@@ -6,10 +6,19 @@ import { resolveMock, demoMode } from './mock';
 // Resolve the API base URL. Production builds inject EXPO_PUBLIC_API_URL via
 // eas.json; app.json -> expo.extra.apiUrl is the bundled default. Both point at
 // the live backend, and the final literal is the production API as a safety net.
+const rawApiUrl = process.env.EXPO_PUBLIC_API_URL;
+const isLocal = rawApiUrl && (
+  rawApiUrl.includes('localhost') || 
+  rawApiUrl.includes('127.0.0.1') || 
+  rawApiUrl.includes('10.') || 
+  rawApiUrl.includes('192.168.') || 
+  rawApiUrl.startsWith('http://')
+);
+
 export const API_BASE =
-  process.env.EXPO_PUBLIC_API_URL ||
-  Constants.expoConfig?.extra?.apiUrl ||
-  'https://api.capaly.in/api';
+  (rawApiUrl && (!isLocal || __DEV__))
+    ? rawApiUrl
+    : (Constants.expoConfig?.extra?.apiUrl || 'https://api.capaly.in/api');
 
 const api = axios.create({ baseURL: API_BASE, timeout: 20000 });
 

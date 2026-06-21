@@ -6,9 +6,9 @@ import { useToast } from '../components/feedback/ToastProvider';
 import { profileApi } from '../api/data.api';
 
 // The latest app version target.
-// Current app.json contains version "1.0.4" (build 5).
-const LATEST_APP_VERSION = '1.0.5';
-const LATEST_VERSION_CODE = 6;
+// Current app.json contains version "1.0.6" (build 7).
+const LATEST_APP_VERSION = '1.0.7';
+const LATEST_VERSION_CODE = 8;
 
 export function useAppUpdate() {
   const toast = useToast();
