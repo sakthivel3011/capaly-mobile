@@ -9,7 +9,13 @@ import { TextField } from './Input';
 
 // Async searchable single-select. `search(query)` resolves an array; `mapItem`
 // turns a result into { label, sublabel, value }.
-export default function SearchSelectField({ label, placeholder = 'Select', value, display, onSelect, search, mapItem, leftIcon, error }) {
+//
+// `loading` (optional) reflects an *external* fetch of the dataset (e.g. the
+// related-incident list still loading on the parent). `searchKey` (optional)
+// re-runs the search whenever it changes — pass the dataset's length/version so
+// the open dropdown refreshes once the data arrives instead of staying stuck on
+// a stale "No results" snapshot taken while the list was still empty (F).
+export default function SearchSelectField({ label, placeholder = 'Select', value, display, onSelect, search, mapItem, leftIcon, error, loading: externalLoading = false, searchKey }) {
   const { colors, radius } = useTheme();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -32,7 +38,7 @@ export default function SearchSelectField({ label, placeholder = 'Select', value
       }
     }, 300);
     return () => debounce.current && clearTimeout(debounce.current);
-  }, [query, open]);
+  }, [query, open, searchKey]);
 
   const choose = (item) => {
     const mapped = mapItem(item);
@@ -71,7 +77,7 @@ export default function SearchSelectField({ label, placeholder = 'Select', value
               style={{ marginBottom: 8 }}
             />
             <View style={{ height: 320 }}>
-              {loading ? (
+              {loading || externalLoading ? (
                 <ActivityIndicator color={colors.primary} style={{ marginTop: 24 }} />
               ) : (
                 <FlashList

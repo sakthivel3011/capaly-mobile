@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import Constants from 'expo-constants';
 import {
@@ -41,8 +42,25 @@ export default function ProfileScreen({ navigation }) {
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [image, setImage] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const isEmployee = portalType === PORTAL.EMPLOYEE;
+
+  // Unread notification count for the badge on the Notifications row (I §1/§4).
+  // Uses the auth token (attached by the api client) and the existing
+  // /notifications/unread-count endpoint. Re-runs on focus, so returning from the
+  // Notifications screen after reading reflects the new count. Failures are
+  // swallowed — a count fetch must never break the Profile page (I §3).
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      notificationApi
+        .unreadCount()
+        .then((res) => { if (active) setUnreadCount(res?.count ?? res?.unread ?? 0); })
+        .catch(() => { /* friendly: just leave the badge as-is */ });
+      return () => { active = false; };
+    }, [])
+  );
 
   // App version + build, read from the embedded app config so it updates
   // automatically whenever a new APK (with a bumped app.json) is installed (L).
@@ -67,7 +85,18 @@ export default function ProfileScreen({ navigation }) {
       // Field name must match the backend multer config (.single('profileImage')).
       // Sending the wrong field name made multer throw "Unexpected field", which is
       // why the upload errored and the image never appeared (G).
-      if (image) form.append('profileImage', { uri: image.uri, name: image.fileName || 'profile.jpg', type: image.mimeType || 'image/jpeg' });
+      //
+      // Always send a filename that carries a real image extension. Android's
+      // picker often returns a fileName with no/unknown extension, which the
+      // backend's extension check rejected (G: upload error) — derive it from the
+      // mime type so the name is always valid.
+      if (image) {
+        const mime = image.mimeType || 'image/jpeg';
+        const ext = mime.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg';
+        const hasGoodExt = image.fileName && /\.(jpg|jpeg|png|webp)$/i.test(image.fileName);
+        const name = hasGoodExt ? image.fileName : `profile.${ext}`;
+        form.append('profileImage', { uri: image.uri, name, type: mime });
+      }
       if (isEmployee) await profileApi.employeeUpdate(form);
       else await profileApi.update(form);
       await refreshMe();
@@ -100,12 +129,17 @@ export default function ProfileScreen({ navigation }) {
 
   const avatarUri = image?.uri || resolveImageUrl(user?.profileImageUrl || user?.avatarUrl);
 
-  const MenuRow = ({ icon: Icon, label, onPress, danger, last }) => (
+  const MenuRow = ({ icon: Icon, label, onPress, danger, last, badge }) => (
     <Pressable onPress={onPress} style={[styles.menuRow, !last && { borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth }]}>
       <View style={[styles.menuIcon, { backgroundColor: danger ? colors.dangerBg : colors.surfaceAlt }]}>
         <Icon size={18} color={danger ? colors.danger : colors.text} />
       </View>
       <Text variant="body" color={danger ? 'danger' : 'text'} style={{ flex: 1 }}>{label}</Text>
+      {badge > 0 ? (
+        <View style={[styles.countBadge, { backgroundColor: colors.danger }]}>
+          <Text variant="caption" color="#FFFFFF" style={styles.countBadgeText}>{badge > 99 ? '99+' : badge}</Text>
+        </View>
+      ) : null}
       {!danger ? <ChevronRight size={18} color={colors.textFaint} /> : null}
     </Pressable>
   );
@@ -207,7 +241,7 @@ export default function ProfileScreen({ navigation }) {
         <Card style={styles.section} padded={false}>
           <View style={styles.menuPad}>
             <MenuRow icon={GitBranch} label="Company Workflow" onPress={() => navigation.navigate('Workflow')} />
-            <MenuRow icon={Bell} label="Notifications" onPress={() => navigation.navigate('Notifications')} />
+            <MenuRow icon={Bell} label="Notifications" badge={unreadCount} onPress={() => navigation.navigate('Notifications')} />
             <MenuRow icon={BellRing} label="Send Test Notification" onPress={sendTestNotification} />
             <MenuRow icon={KeyRound} label="Change Password" onPress={() => navigation.navigate('ChangePassword')} />
             <MenuRow icon={SettingsIcon} label="Settings" onPress={() => navigation.navigate('Settings')} last />
@@ -271,6 +305,8 @@ const styles = StyleSheet.create({
   menuPad: { paddingHorizontal: 16 },
   menuRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 15 },
   menuIcon: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  countBadge: { minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center', marginRight: 8 },
+  countBadgeText: { fontSize: 10, lineHeight: 13, fontWeight: '700' },
   editBtn: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   versionWrap: { marginTop: 24 },
   version: { textAlign: 'center' },

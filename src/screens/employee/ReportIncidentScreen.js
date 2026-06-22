@@ -65,7 +65,10 @@ export default function ReportIncidentScreen({ navigation }) {
       toast.success(`Incident reported successfully${ref}`);
       // Incident is saved even if an attachment fails — warn so it can be retried.
       if (created?.attachmentWarning) toast.warning(created.attachmentWarning);
-      draft.clear();
+      // E §4/§5: await the removeItem so the draft key is gone from AsyncStorage
+      // *before* we leave the screen. Without the await, re-opening Report Incident
+      // before the native write flushed would read the stale draft and show it again.
+      await draft.clear();
       navigation.goBack();
     } catch (err) {
       toast.error(apiError(err, 'Could not submit the report'));

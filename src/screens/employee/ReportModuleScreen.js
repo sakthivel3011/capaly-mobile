@@ -135,7 +135,9 @@ export default function ReportModuleScreen({ navigation, route }) {
       if (cfg.hasDue && values.due) body[cfg.dueKey || 'dueDate'] = values.due;
       await cfg.submit(body);
       toast.success(`${cfg.title.replace('Report ', '')} submitted`);
-      draft.clear();
+      // E §4/§5: await so the draft key is removed from AsyncStorage before we
+      // leave — otherwise re-opening the form could read the stale draft.
+      await draft.clear();
       navigation.goBack();
     } catch (err) {
       toast.error(apiError(err, 'Could not submit'));
@@ -161,6 +163,8 @@ export default function ReportModuleScreen({ navigation, route }) {
                 search={searchIncidents}
                 mapItem={mapIncident}
                 leftIcon={<Search size={18} color={colors.textMuted} />}
+                loading={incidentsLoading}
+                searchKey={incidents.length}
               />
             )} />
           ) : null}

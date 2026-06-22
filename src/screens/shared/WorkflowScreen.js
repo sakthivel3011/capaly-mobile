@@ -31,7 +31,9 @@ export default function WorkflowScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={accent} />}
       >
-        {!loading && workflows.length === 0 ? (
+        {/* Empty state only when the request succeeded but returned nothing —
+            an empty response must NOT look like an error (H §6/§7). */}
+        {!loading && !error && workflows.length === 0 ? (
           <Card style={styles.empty}>
             <WorkflowIcon size={34} color={colors.textFaint} />
             <Text variant="title" style={{ marginTop: 12, textAlign: 'center' }}>No workflow configured</Text>
@@ -69,7 +71,22 @@ export default function WorkflowScreen({ navigation }) {
                 <View style={[styles.infoLine, { borderTopColor: colors.border }]}>
                   <Building2 size={14} color={colors.textMuted} />
                   <Text variant="small" color="textMuted" style={{ marginLeft: 8 }}>First receiver</Text>
-                  <Text variant="small" style={{ marginLeft: 'auto', fontWeight: '700' }}>{w.firstReceiverDepartment}</Text>
+                  <Text variant="small" style={{ marginLeft: 'auto', fontWeight: '700' }} numberOfLines={1}>{w.firstReceiverDepartment}</Text>
+                </View>
+              ) : null}
+
+              {/* Mapped departments across the workflow's stages (H §5). */}
+              {w.departments && w.departments.length ? (
+                <View style={[styles.infoLine, { borderTopColor: colors.border, alignItems: 'flex-start' }]}>
+                  <Building2 size={14} color={colors.textMuted} style={{ marginTop: 2 }} />
+                  <Text variant="small" color="textMuted" style={{ marginLeft: 8 }}>Departments</Text>
+                  <View style={styles.deptChips}>
+                    {w.departments.map((d, i) => (
+                      <View key={`${w.id}-dept-${i}`} style={[styles.deptChip, { backgroundColor: `${accent}14` }]}>
+                        <Text variant="caption" style={{ color: accent, fontWeight: '700' }} numberOfLines={1}>{d}</Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
               ) : null}
 
@@ -99,6 +116,8 @@ const styles = StyleSheet.create({
   iconWrap: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
   infoLine: { flexDirection: 'row', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },
+  deptChips: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 6, marginLeft: 12 },
+  deptChip: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, maxWidth: '100%' },
   stepsWrap: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth, gap: 4 },
   stepItem: { flexDirection: 'row', alignItems: 'center' },
   stepDot: { width: 7, height: 7, borderRadius: 4 },

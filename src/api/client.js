@@ -126,7 +126,13 @@ api.interceptors.response.use(
 
 // Normalize an axios error into a user-facing message.
 export function apiError(err, fallback = 'Something went wrong. Please try again.') {
-  if (err?.response?.data?.message) return err.response.data.message;
+  const status = err?.response?.status;
+  const serverMsg = err?.response?.data?.message;
+  // Never surface the raw "Route not found: METHOD /path" 404 body — it's a
+  // technical/internal message (I §3/§5). Fall back to the friendly text so the
+  // user sees something sensible if an endpoint is unavailable.
+  if (status === 404 && (!serverMsg || /^route not found/i.test(serverMsg))) return fallback;
+  if (serverMsg) return serverMsg;
   if (err?.message === 'Network Error') return 'No connection. Check your network and try again.';
   return fallback;
 }

@@ -175,14 +175,14 @@ export default function PortalLoginScreen({ navigation, route }) {
                   <ControlledField control={regControl} name="lastName" label="Last name" placeholder="Doe" style={styles.rowItem}
                     leftIcon={<User size={18} color={colors.textMuted} />} focusBorderColor={C} />
                 </View>
-                {/* A: email field must be typeable on Android. autoComplete/
-                    textContentType triggered the autofill overlay which swallowed
-                    keystrokes on some devices — removed. autoComplete="off" keeps
-                    the field a plain, editable input. value/onChangeText are wired
-                    through ControlledField -> react-hook-form. */}
+                {/* A: email field must be typeable on Android. The autofill-
+                    suppression props (autoComplete="off" / importantForAutofill /
+                    textContentType) were what swallowed keystrokes on some
+                    devices — keep this a plain, editable input. value/onChangeText
+                    are wired through ControlledField -> react-hook-form, exactly
+                    like the other fields that type fine. */}
                 <ControlledField control={regControl} name="email" label="Email" placeholder="you@company.com"
-                  autoCapitalize="none" autoCorrect={false} autoComplete="off"
-                  importantForAutofill="no" textContentType="none"
+                  autoCapitalize="none" autoCorrect={false}
                   keyboardType="email-address" editable={true}
                   onFocus={onFieldFocus}
                   leftIcon={<Mail size={18} color={colors.textMuted} />} focusBorderColor={C} />
