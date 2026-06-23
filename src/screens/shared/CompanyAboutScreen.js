@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Image, ScrollView, StyleSheet } from 'react-native';
+import Constants from 'expo-constants';
 import { Building2, Mail, Phone, MapPin, Briefcase, Globe, User, BadgeCheck } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthStore } from '../../store/authStore';
@@ -76,6 +77,7 @@ export default function CompanyAboutScreen({ navigation }) {
 
         <Text variant="caption" color="textFaint" style={styles.version}>
           Powered by CAPALY · Safety • Compliance • CAPA • Inspections
+          {'\n'}v{Constants.expoConfig?.version || '1.0.0'}
         </Text>
       </ScrollView>
     </View>

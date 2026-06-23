@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet, RefreshControl } from 'react-native';
-import { GitBranch, Building2, Tag, ChevronRight, Workflow as WorkflowIcon } from 'lucide-react-native';
+import { View, ScrollView, Pressable, StyleSheet, RefreshControl } from 'react-native';
+import { Workflow as WorkflowIcon, ChevronRight, User, Building2, Calendar } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAccents } from '../../theme/accent';
 import { workflowApi } from '../../api/data.api';
@@ -8,20 +8,23 @@ import { useAsync } from '../../hooks/useAsync';
 import AppHeader from '../../components/ui/AppHeader';
 import Card from '../../components/ui/Card';
 import Text from '../../components/ui/Text';
-import { Badge } from '../../components/ui/Badge';
-import { asArray } from '../../utils/format';
+import { SeverityBadge } from '../../components/ui/Badge';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { asArray, formatDate } from '../../utils/format';
 
-// Default lifecycle steps shown when a workflow has no explicit stages, so the
-// user always sees the standard CAPALY pipeline.
-const DEFAULT_STEPS = ['Incident', 'Investigation', 'CAPA', 'Inspection', 'Final Report'];
+// The standard CAPALY incident lifecycle shown as the pipeline header.
+const PIPELINE = ['Incident Reported', 'Investigation', 'CAPA', 'Inspection', 'Final Report', 'Closed'];
 
-// Company Workflow screen — read-only view of the company's incident workflows.
-// Visible to Employee and Department users (D §2/§5/§6).
+// Company Workflow screen — read-only list of every company incident with its
+// current lifecycle stage + progress. Visible to Employee and Department users.
+// Includes employee-, department- and safety-reported incidents (no filtering).
 export default function WorkflowScreen({ navigation }) {
   const { colors } = useTheme();
   const { accent } = useAccents();
-  const { data, loading, refreshing, error, refresh } = useAsync(() => workflowApi.myCompany(), []);
-  const workflows = asArray(data);
+  const { data, loading, refreshing, error, refresh } = useAsync(() => workflowApi.myCompanyIncidents(), []);
+  const incidents = asArray(data);
+
+  const openIncident = (inc) => navigation.navigate('IncidentDetail', { id: inc.id, title: inc.incidentNo });
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -31,76 +34,88 @@ export default function WorkflowScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={accent} />}
       >
-        {/* Empty state only when the request succeeded but returned nothing —
-            an empty response must NOT look like an error (H §6/§7). */}
-        {!loading && !error && workflows.length === 0 ? (
+        {/* Pipeline overview */}
+        <Card style={styles.pipelineCard}>
+          <Text variant="title" style={{ marginBottom: 12 }}>Incident lifecycle</Text>
+          <View style={styles.pipeline}>
+            {PIPELINE.map((s, i) => (
+              <View key={s} style={styles.pipeStep}>
+                <View style={[styles.pipeDot, { backgroundColor: accent }]} />
+                <Text variant="caption" style={{ marginLeft: 6 }} numberOfLines={1}>{s}</Text>
+                {i < PIPELINE.length - 1 ? <ChevronRight size={13} color={colors.textFaint} style={{ marginHorizontal: 1 }} /> : null}
+              </View>
+            ))}
+          </View>
+        </Card>
+
+        {loading && !data ? (
+          <>
+            <Skeleton width="100%" height={130} radius={20} style={{ marginTop: 14 }} />
+            <Skeleton width="100%" height={130} radius={20} style={{ marginTop: 14 }} />
+          </>
+        ) : null}
+
+        {/* Empty state only when the request succeeded but returned nothing — an
+            empty response must NOT look like an error. */}
+        {!loading && !error && incidents.length === 0 ? (
           <Card style={styles.empty}>
             <WorkflowIcon size={34} color={colors.textFaint} />
-            <Text variant="title" style={{ marginTop: 12, textAlign: 'center' }}>No workflow configured</Text>
+            <Text variant="title" style={{ marginTop: 12, textAlign: 'center' }}>No incidents yet</Text>
             <Text variant="small" color="textMuted" style={{ marginTop: 6, textAlign: 'center' }}>
-              No workflow configured for your company.
+              Incidents reported in your company will appear here as they move through the workflow.
             </Text>
           </Card>
         ) : null}
 
         {error && !loading ? (
           <Card style={styles.empty}>
-            <Text variant="small" color="danger" style={{ textAlign: 'center' }}>Could not load workflows. Pull to retry.</Text>
+            <Text variant="small" color="danger" style={{ textAlign: 'center' }}>Could not load the workflow. Pull to retry.</Text>
           </Card>
         ) : null}
 
-        {workflows.map((w) => {
-          const steps = (w.steps && w.steps.length ? w.steps : DEFAULT_STEPS);
+        {incidents.map((inc) => {
+          const progress = Math.max(0, Math.min(100, inc.progress || 0));
           return (
-            <Card key={w.id} style={styles.card}>
-              <View style={styles.cardTop}>
-                <View style={[styles.iconWrap, { backgroundColor: `${accent}1A` }]}>
-                  <GitBranch size={18} color={accent} />
+            <Pressable key={inc.id} onPress={() => openIncident(inc)} style={({ pressed }) => pressed && { opacity: 0.85 }}>
+              <Card style={styles.card}>
+                <View style={styles.cardTop}>
+                  <View style={{ flex: 1, marginRight: 10 }}>
+                    <Text variant="caption" style={{ color: accent, fontWeight: '700' }}>{inc.incidentNo}</Text>
+                    <Text variant="title" numberOfLines={2} style={{ marginTop: 2 }}>{inc.title}</Text>
+                  </View>
+                  <SeverityBadge value={inc.severity} />
                 </View>
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text variant="title" numberOfLines={1}>{w.workflowName}</Text>
-                  <View style={styles.metaRow}>
-                    <Tag size={12} color={colors.textMuted} />
-                    <Text variant="caption" color="textMuted" style={{ marginLeft: 4 }}>{w.incidentType}</Text>
+
+                {/* Reporter / department / date meta */}
+                <View style={styles.metaWrap}>
+                  <View style={styles.metaItem}>
+                    <User size={13} color={colors.textMuted} />
+                    <Text variant="caption" color="textMuted" style={styles.metaText} numberOfLines={1}>{inc.reporter || '—'}</Text>
+                  </View>
+                  {inc.department ? (
+                    <View style={styles.metaItem}>
+                      <Building2 size={13} color={colors.textMuted} />
+                      <Text variant="caption" color="textMuted" style={styles.metaText} numberOfLines={1}>{inc.department}</Text>
+                    </View>
+                  ) : null}
+                  <View style={styles.metaItem}>
+                    <Calendar size={13} color={colors.textMuted} />
+                    <Text variant="caption" color="textMuted" style={styles.metaText}>{formatDate(inc.createdAt)}</Text>
                   </View>
                 </View>
-                <Badge label={w.isActive ? 'Active' : 'Inactive'} color={w.isActive ? '#16A34A' : colors.textMuted} />
-              </View>
 
-              {w.firstReceiverDepartment ? (
-                <View style={[styles.infoLine, { borderTopColor: colors.border }]}>
-                  <Building2 size={14} color={colors.textMuted} />
-                  <Text variant="small" color="textMuted" style={{ marginLeft: 8 }}>First receiver</Text>
-                  <Text variant="small" style={{ marginLeft: 'auto', fontWeight: '700' }} numberOfLines={1}>{w.firstReceiverDepartment}</Text>
-                </View>
-              ) : null}
-
-              {/* Mapped departments across the workflow's stages (H §5). */}
-              {w.departments && w.departments.length ? (
-                <View style={[styles.infoLine, { borderTopColor: colors.border, alignItems: 'flex-start' }]}>
-                  <Building2 size={14} color={colors.textMuted} style={{ marginTop: 2 }} />
-                  <Text variant="small" color="textMuted" style={{ marginLeft: 8 }}>Departments</Text>
-                  <View style={styles.deptChips}>
-                    {w.departments.map((d, i) => (
-                      <View key={`${w.id}-dept-${i}`} style={[styles.deptChip, { backgroundColor: `${accent}14` }]}>
-                        <Text variant="caption" style={{ color: accent, fontWeight: '700' }} numberOfLines={1}>{d}</Text>
-                      </View>
-                    ))}
+                {/* Current stage + progress */}
+                <View style={[styles.progressHeader, { borderTopColor: colors.border }]}>
+                  <View style={[styles.stageChip, { backgroundColor: `${accent}14` }]}>
+                    <Text variant="caption" style={{ color: accent, fontWeight: '700' }}>{inc.currentStage}</Text>
                   </View>
+                  <Text variant="caption" color="textMuted" style={{ fontWeight: '700' }}>{progress}%</Text>
                 </View>
-              ) : null}
-
-              {/* Steps pipeline */}
-              <View style={[styles.stepsWrap, { borderTopColor: colors.border }]}>
-                {steps.map((s, i) => (
-                  <View key={`${w.id}-${i}`} style={styles.stepItem}>
-                    <View style={[styles.stepDot, { backgroundColor: accent }]} />
-                    <Text variant="caption" style={{ marginLeft: 6 }} numberOfLines={1}>{s}</Text>
-                    {i < steps.length - 1 ? <ChevronRight size={14} color={colors.textFaint} style={{ marginHorizontal: 2 }} /> : null}
-                  </View>
-                ))}
-              </View>
-            </Card>
+                <View style={[styles.progressTrack, { backgroundColor: colors.surfaceAlt }]}>
+                  <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: accent }]} />
+                </View>
+              </Card>
+            </Pressable>
           );
         })}
       </ScrollView>
@@ -110,15 +125,18 @@ export default function WorkflowScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 40 },
-  empty: { alignItems: 'center', paddingVertical: 40, marginTop: 8 },
-  card: { marginBottom: 14, padding: 16 },
-  cardTop: { flexDirection: 'row', alignItems: 'center' },
-  iconWrap: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
-  infoLine: { flexDirection: 'row', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },
-  deptChips: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 6, marginLeft: 12 },
-  deptChip: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, maxWidth: '100%' },
-  stepsWrap: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth, gap: 4 },
-  stepItem: { flexDirection: 'row', alignItems: 'center' },
-  stepDot: { width: 7, height: 7, borderRadius: 4 },
+  pipelineCard: { padding: 16 },
+  pipeline: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 4 },
+  pipeStep: { flexDirection: 'row', alignItems: 'center' },
+  pipeDot: { width: 7, height: 7, borderRadius: 4 },
+  empty: { alignItems: 'center', paddingVertical: 40, marginTop: 14 },
+  card: { marginTop: 14, padding: 16 },
+  cardTop: { flexDirection: 'row', alignItems: 'flex-start' },
+  metaWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, marginTop: 12 },
+  metaItem: { flexDirection: 'row', alignItems: 'center', maxWidth: '100%' },
+  metaText: { marginLeft: 5, flexShrink: 1 },
+  progressHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },
+  stageChip: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  progressTrack: { height: 7, borderRadius: 4, marginTop: 8, overflow: 'hidden' },
+  progressFill: { height: 7, borderRadius: 4 },
 });

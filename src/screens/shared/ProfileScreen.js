@@ -1,17 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { View, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import Constants from 'expo-constants';
 import {
-  Mail, Phone, IdCard, Building2, Settings as SettingsIcon, KeyRound, Bell, LogOut, Camera, ChevronRight, Pencil, Briefcase,
-  GitBranch, BellRing, Sun, Moon, Smartphone, Palette,
+  Mail, Phone, IdCard, Building2, Settings as SettingsIcon, LogOut, Camera, ChevronRight, Pencil, Briefcase,
+  GitBranch, Sun, Moon, Smartphone, Palette,
 } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAccents } from '../../theme/accent';
 import { useAuthStore, PORTAL } from '../../store/authStore';
-import { profileApi, notificationApi } from '../../api/data.api';
-import { registerAndSyncPushToken } from '../../services/push';
+import { profileApi } from '../../api/data.api';
 import { apiError } from '../../api/client';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { useConfirm } from '../../components/feedback/ConfirmProvider';
@@ -42,25 +40,8 @@ export default function ProfileScreen({ navigation }) {
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [image, setImage] = useState(null);
-  const [unreadCount, setUnreadCount] = useState(0);
 
   const isEmployee = portalType === PORTAL.EMPLOYEE;
-
-  // Unread notification count for the badge on the Notifications row (I §1/§4).
-  // Uses the auth token (attached by the api client) and the existing
-  // /notifications/unread-count endpoint. Re-runs on focus, so returning from the
-  // Notifications screen after reading reflects the new count. Failures are
-  // swallowed — a count fetch must never break the Profile page (I §3).
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      notificationApi
-        .unreadCount()
-        .then((res) => { if (active) setUnreadCount(res?.count ?? res?.unread ?? 0); })
-        .catch(() => { /* friendly: just leave the badge as-is */ });
-      return () => { active = false; };
-    }, [])
-  );
 
   // App version + build, read from the embedded app config so it updates
   // automatically whenever a new APK (with a bumped app.json) is installed (L).
@@ -107,18 +88,6 @@ export default function ProfileScreen({ navigation }) {
       toast.error(apiError(err));
     } finally {
       setSaving(false);
-    }
-  };
-
-  const sendTestNotification = async () => {
-    try {
-      // Make sure this device's token is registered first, then ask the backend
-      // to push a test notification back to it (F §3/§4).
-      await registerAndSyncPushToken();
-      await notificationApi.selfTestPush();
-      toast.success('Test notification sent. Check your notification tray.');
-    } catch (err) {
-      toast.error(apiError(err, 'Could not send test notification. Allow notifications and try again.'));
     }
   };
 
@@ -241,9 +210,6 @@ export default function ProfileScreen({ navigation }) {
         <Card style={styles.section} padded={false}>
           <View style={styles.menuPad}>
             <MenuRow icon={GitBranch} label="Company Workflow" onPress={() => navigation.navigate('Workflow')} />
-            <MenuRow icon={Bell} label="Notifications" badge={unreadCount} onPress={() => navigation.navigate('Notifications')} />
-            <MenuRow icon={BellRing} label="Send Test Notification" onPress={sendTestNotification} />
-            <MenuRow icon={KeyRound} label="Change Password" onPress={() => navigation.navigate('ChangePassword')} />
             <MenuRow icon={SettingsIcon} label="Settings" onPress={() => navigation.navigate('Settings')} last />
           </View>
         </Card>

@@ -20,7 +20,7 @@ function greeting() {
 }
 
 // Gradient hero with greeting, user, company/department context + bell.
-export default function DashboardHero({ user, subtitle, badge, role, onBellPress }) {
+export default function DashboardHero({ user, subtitle, badge, role, onBellPress, onProfilePress }) {
   const { colors } = useTheme();
   const { accent: HERO_COLOR, accentDark: HERO_COLOR_DARK } = useAccents();
   const insets = useSafeAreaInsets();
@@ -49,7 +49,13 @@ export default function DashboardHero({ user, subtitle, badge, role, onBellPress
       <View pointerEvents="none" style={styles.glowBottom} />
 
       <View style={styles.topRow}>
-        <View style={styles.userRow}>
+        {/* Tapping the user/avatar block opens the Profile page (mobile §1). */}
+        <Pressable
+          onPress={onProfilePress}
+          disabled={!onProfilePress}
+          hitSlop={6}
+          style={({ pressed }) => [styles.userRow, pressed && onProfilePress && { opacity: 0.8 }]}
+        >
           <View style={styles.avatarRing}>
             <Avatar uri={resolveImageUrl(user?.profileImageUrl || user?.avatarUrl)} name={fullName(user)} size={44} variant="onAccent" />
           </View>
@@ -64,7 +70,7 @@ export default function DashboardHero({ user, subtitle, badge, role, onBellPress
               ) : null}
             </View>
           </View>
-        </View>
+        </Pressable>
         <View style={styles.actions}>
           <NotificationBell light onPress={onBellPress} />
           <Pressable
@@ -78,9 +84,11 @@ export default function DashboardHero({ user, subtitle, badge, role, onBellPress
       </View>
 
       <View style={styles.contextRow}>
-        <View style={styles.contextChip}>
+        {/* Company chip is width-capped so a long company name truncates with an
+            ellipsis instead of stretching across the bar (mobile §2). */}
+        <View style={[styles.contextChip, styles.companyChip]}>
           <View style={styles.chipDot} />
-          <Text variant="caption" color="#FFFFFF" numberOfLines={1}>
+          <Text variant="caption" color="#FFFFFF" numberOfLines={1} style={styles.companyName}>
             {user?.company?.name || 'CAPALY'}
           </Text>
         </View>
@@ -166,6 +174,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
+  companyChip: { maxWidth: '62%' },
+  companyName: { flexShrink: 1 },
   chipDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#7FE3A0' },
   roleChip: { backgroundColor: '#FFFFFF', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
   roleText: { fontWeight: '700' },

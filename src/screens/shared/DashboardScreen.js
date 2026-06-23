@@ -78,6 +78,12 @@ export default function DashboardScreen({ navigation }) {
   const subtitle = portal.isDept ? user?.department?.name : portal.isEmployee ? null : portal.label;
 
   const goNotifications = () => navigation.navigate('Notifications');
+  // Open the Profile page from the dashboard header (mobile §1). ProfileTab is an
+  // ancestor tab route, so navigating to it bubbles up from this stack. Target the
+  // nested `Profile` screen explicitly so it always lands on the Profile page
+  // instead of whatever screen the Profile stack was last left on (Settings,
+  // ChangePassword, an incident opened from notifications, etc.).
+  const goProfile = () => navigation.navigate('ProfileTab', { screen: 'Profile' });
   const openIncident = (incident) => navigation.navigate('IncidentDetail', { id: incident.id, title: incident.incidentNo });
 
   return (
@@ -93,6 +99,7 @@ export default function DashboardScreen({ navigation }) {
           badge={portal.isEmployee && user?.employeeId ? `ID ${user.employeeId}` : null}
           role={portal.isEmployee ? 'Employee' : portal.isDept ? 'Department' : portal.label}
           onBellPress={goNotifications}
+          onProfilePress={goProfile}
         />
 
         <View style={styles.body}>

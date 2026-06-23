@@ -62,6 +62,9 @@ function WorkflowStack() {
   return (
     <Stack.Navigator screenOptions={stack}>
       <Stack.Screen name="Workflow" component={WorkflowScreen} />
+      {/* Tapping an incident in the workflow list opens its details. */}
+      <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
+      <Stack.Screen name="ReportModule" component={ReportModuleScreen} />
     </Stack.Navigator>
   );
 }

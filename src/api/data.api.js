@@ -71,6 +71,9 @@ export const departmentApi = {
 export const workflowApi = {
   // Company-scoped workflows for the logged-in user (employee/department too).
   myCompany: () => api.get('/workflows/my-company').then((r) => r.data),
+  // Every company incident with its lifecycle stage + progress (Company Workflow
+  // page). Includes employee + department + safety incidents.
+  myCompanyIncidents: () => api.get('/workflows/my-company/incidents').then((r) => r.data),
 };
 
 // ---- Company-wide incident options (for linking Investigation/CAPA/Inspection)
