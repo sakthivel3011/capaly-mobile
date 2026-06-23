@@ -175,15 +175,16 @@ export default function PortalLoginScreen({ navigation, route }) {
                   <ControlledField control={regControl} name="lastName" label="Last name" placeholder="Doe" style={styles.rowItem}
                     leftIcon={<User size={18} color={colors.textMuted} />} focusBorderColor={C} />
                 </View>
-                {/* A: email field must be typeable on Android. The autofill-
-                    suppression props (autoComplete="off" / importantForAutofill /
-                    textContentType) were what swallowed keystrokes on some
-                    devices — keep this a plain, editable input. value/onChangeText
-                    are wired through ControlledField -> react-hook-form, exactly
-                    like the other fields that type fine. */}
+                {/* email field must be typeable on Android. The email-address
+                    keyboard keeps a composing/suggestion region; re-feeding the
+                    controlled RHF value on every keystroke reset that region and
+                    swallowed the typed characters. `uncontrolled` renders the
+                    native input with defaultValue + onChangeText (no value fed
+                    back), so typing sticks while RHF still gets every change. */}
                 <ControlledField control={regControl} name="email" label="Email" placeholder="you@company.com"
+                  uncontrolled
                   autoCapitalize="none" autoCorrect={false}
-                  keyboardType="email-address" editable={true}
+                  keyboardType="email-address"
                   onFocus={onFieldFocus}
                   leftIcon={<Mail size={18} color={colors.textMuted} />} focusBorderColor={C} />
                 <ControlledField control={regControl} name="phone" label="Phone" placeholder="e.g. +1234567890" autoCapitalize="none"

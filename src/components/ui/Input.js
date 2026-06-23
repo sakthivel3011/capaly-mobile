@@ -11,6 +11,7 @@ import Text from './Text';
 export function TextField({
   label,
   value,
+  defaultValue,
   onChangeText,
   onBlur,
   onFocus,
@@ -58,6 +59,7 @@ export function TextField({
         {leftIcon ? <View style={styles.leftIcon}>{leftIcon}</View> : null}
         <TextInput
           value={value}
+          defaultValue={defaultValue}
           onChangeText={onChangeText}
           onFocus={() => { setFocused(true); onFocus && onFocus(); }}
           onBlur={() => { setFocused(false); onBlur && onBlur(); }}
@@ -101,7 +103,12 @@ export function TextField({
 }
 
 // react-hook-form bound field.
-export function ControlledField({ control, name, rules, ...props }) {
+// `uncontrolled`: render the native TextInput uncontrolled (defaultValue +
+// onChangeText, no `value` fed back). Use this for the email field on Android,
+// where re-feeding the controlled value on every keystroke resets the keyboard's
+// composing/suggestion region and swallows typed characters. RHF still receives
+// every change via onChange, so validation and submit work unchanged.
+export function ControlledField({ control, name, rules, uncontrolled, ...props }) {
   return (
     <Controller
       control={control}
@@ -109,7 +116,8 @@ export function ControlledField({ control, name, rules, ...props }) {
       rules={rules}
       render={({ field: { value, onChange, onBlur }, fieldState: { error } }) => (
         <TextField
-          value={value}
+          value={uncontrolled ? undefined : value}
+          defaultValue={uncontrolled ? value : undefined}
           onChangeText={onChange}
           onBlur={onBlur}
           error={error?.message}
