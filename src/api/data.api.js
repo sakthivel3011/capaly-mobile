@@ -93,7 +93,7 @@ export const actionPlanApi = {
   // Employee assigned tasks
   employeeList: () => api.get('/employee/action-plan').then((r) => r.data),
   employeeTasks: () => api.get('/employee/tasks').then((r) => r.data),
-  employeeTaskStatus: (taskId, status) => api.patch(`/employee/tasks/${taskId}/status`, { status }).then((r) => r.data),
+  employeeTaskStatus: (taskId, status, extra = {}) => api.patch(`/employee/tasks/${taskId}/status`, { status, ...extra }).then((r) => r.data),
 };
 
 // ---- Notifications --------------------------------------------------------

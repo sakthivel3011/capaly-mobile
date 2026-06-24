@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { LayoutDashboard, Plus, AlertTriangle, Bell, User } from 'lucide-react-native';
+import { LayoutDashboard, Plus, AlertTriangle, ClipboardList, Bell, User } from 'lucide-react-native';
 import { useTheme } from '../theme/ThemeProvider';
 import { tabScreenOptions, tabIcon } from './tabOptions';
 import ReportSheet from '../components/domain/ReportSheet';
@@ -15,6 +15,8 @@ import IncidentDetailScreen from '../screens/shared/IncidentDetailScreen';
 import ReportHubScreen from '../screens/employee/ReportHubScreen';
 import ReportIncidentScreen from '../screens/employee/ReportIncidentScreen';
 import ReportModuleScreen from '../screens/employee/ReportModuleScreen';
+import EmployeeActionPlanScreen from '../screens/employee/EmployeeActionPlanScreen';
+import EmployeeActionPlanDetailScreen from '../screens/employee/EmployeeActionPlanDetailScreen';
 import NotificationsScreen from '../screens/shared/NotificationsScreen';
 import ProfileScreen from '../screens/shared/ProfileScreen';
 import WorkflowScreen from '../screens/shared/WorkflowScreen';
@@ -53,6 +55,18 @@ function IncidentsStack() {
       <Stack.Screen name="Incidents" component={IncidentsScreen} />
       <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
       <Stack.Screen name="ReportIncident" component={ReportIncidentScreen} />
+      <Stack.Screen name="ReportModule" component={ReportModuleScreen} />
+    </Stack.Navigator>
+  );
+}
+function ActionPlanStack() {
+  return (
+    <Stack.Navigator screenOptions={stack}>
+      {/* Department action plan tasks assigned to this employee (read + advance status). */}
+      <Stack.Screen name="ActionPlan" component={EmployeeActionPlanScreen} />
+      <Stack.Screen name="ActionPlanDetail" component={EmployeeActionPlanDetailScreen} />
+      {/* Tapping the task's incident opens its full detail (like My Incidents). */}
+      <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
       <Stack.Screen name="ReportModule" component={ReportModuleScreen} />
     </Stack.Navigator>
   );
@@ -138,7 +152,7 @@ export default function EmployeeNavigator() {
             },
           })}
         />
-        <Tab.Screen name="NotificationsTab" component={NotificationsStack} options={{ title: 'Alerts', tabBarIcon: tabIcon(Bell) }} />
+        <Tab.Screen name="ActionPlanTab" component={ActionPlanStack} options={{ title: 'Action Plan', tabBarIcon: tabIcon(ClipboardList) }} />
         <Tab.Screen name="ProfileTab" component={ProfileStack} options={{ title: 'Profile', tabBarIcon: tabIcon(User) }} />
       </Tab.Navigator>
       <ReportSheet visible={sheet.open} onClose={closeSheet} onSelect={handleSelect} />

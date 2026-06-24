@@ -12,14 +12,7 @@ import Avatar from '../ui/Avatar';
 import NotificationBell from './NotificationBell';
 import { fullName, resolveImageUrl } from '../../utils/format';
 
-function greeting() {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 17) return 'Good afternoon';
-  return 'Good evening';
-}
-
-// Gradient hero with greeting, user, company/department context + bell.
+// Gradient hero: company name on top, user name + employee ID below, plus bell.
 export default function DashboardHero({ user, subtitle, badge, role, onBellPress, onProfilePress }) {
   const { colors } = useTheme();
   const { accent: HERO_COLOR, accentDark: HERO_COLOR_DARK } = useAccents();
@@ -44,9 +37,7 @@ export default function DashboardHero({ user, subtitle, badge, role, onBellPress
       end={{ x: 1, y: 1 }}
       style={[styles.hero, { paddingTop: insets.top + 14 }]}
     >
-      {/* Decorative glow circles for depth */}
-      <View pointerEvents="none" style={styles.glowTop} />
-      <View pointerEvents="none" style={styles.glowBottom} />
+
 
       <View style={styles.topRow}>
         {/* Tapping the user/avatar block opens the Profile page (mobile §1). */}
@@ -60,15 +51,13 @@ export default function DashboardHero({ user, subtitle, badge, role, onBellPress
             <Avatar uri={resolveImageUrl(user?.profileImageUrl || user?.avatarUrl)} name={fullName(user)} size={44} variant="onAccent" />
           </View>
           <View style={styles.userText}>
-            <Text variant="caption" color="rgba(255,255,255,0.78)">{greeting()},</Text>
-            <View style={styles.nameRow}>
-              <Text variant="h3" color="#FFFFFF" numberOfLines={1} style={styles.name}>{fullName(user) || 'there'}</Text>
-              {badge ? (
-                <View style={styles.badge}>
-                  <Text variant="caption" color="#FFFFFF" numberOfLines={1} style={styles.badgeText}>{badge}</Text>
-                </View>
-              ) : null}
-            </View>
+            {/* Company name on top, then the user's name + employee ID stacked
+                below it (mobile §: employee top bar). */}
+
+            <Text variant="h3" color="#FFFFFF" numberOfLines={1} style={styles.name}>{fullName(user) || 'there'}</Text>
+            {badge ? (
+              <Text variant="caption" color="rgba(255,255,255,0.8)" numberOfLines={1} style={styles.idLine}>{badge}</Text>
+            ) : null}
           </View>
         </Pressable>
         <View style={styles.actions}>
@@ -83,26 +72,20 @@ export default function DashboardHero({ user, subtitle, badge, role, onBellPress
         </View>
       </View>
 
-      <View style={styles.contextRow}>
-        {/* Company chip is width-capped so a long company name truncates with an
-            ellipsis instead of stretching across the bar (mobile §2). */}
-        <View style={[styles.contextChip, styles.companyChip]}>
-          <View style={styles.chipDot} />
-          <Text variant="caption" color="#FFFFFF" numberOfLines={1} style={styles.companyName}>
-            {user?.company?.name || 'CAPALY'}
-          </Text>
+      {role || subtitle ? (
+        <View style={styles.contextRow}>
+          {role ? (
+            <View style={styles.roleChip}>
+              <Text variant="caption" numberOfLines={1} style={[styles.roleText, { color: HERO_COLOR }]}>{role}</Text>
+            </View>
+          ) : null}
+          {subtitle ? (
+            <View style={styles.contextChip}>
+              <Text variant="caption" color="rgba(255,255,255,0.92)" numberOfLines={1}>{subtitle}</Text>
+            </View>
+          ) : null}
         </View>
-        {role ? (
-          <View style={styles.roleChip}>
-            <Text variant="caption" numberOfLines={1} style={[styles.roleText, { color: HERO_COLOR }]}>{role}</Text>
-          </View>
-        ) : null}
-        {subtitle ? (
-          <View style={styles.contextChip}>
-            <Text variant="caption" color="rgba(255,255,255,0.92)" numberOfLines={1}>{subtitle}</Text>
-          </View>
-        ) : null}
-      </View>
+      ) : null}
     </LinearGradient>
   );
 }
@@ -151,8 +134,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.45)',
   },
   userText: { marginLeft: 12, flex: 1 },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  companyLine: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 },
+  companyTop: { flexShrink: 1, fontWeight: '600' },
   name: { flexShrink: 1 },
+  idLine: { marginTop: 1, letterSpacing: 0.2 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   badge: {
     backgroundColor: 'rgba(255,255,255,0.22)',
     borderWidth: StyleSheet.hairlineWidth,

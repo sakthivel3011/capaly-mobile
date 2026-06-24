@@ -27,7 +27,7 @@ function normalize(portal, data) {
         { label: 'My Incidents', value: s.myIncidents, icon: AlertTriangle, tone: 'primary' },
         { label: 'Open Reports', value: s.openReports, icon: FileWarning, tone: 'warning' },
         { label: 'CAPA Assigned', value: s.capaAssigned, icon: ClipboardCheck, tone: 'accent' },
-        { label: 'Action Tasks', value: s.actionTasks, icon: ListTodo, tone: 'info' },
+        { label: 'Action Tasks', value: s.actionTasks, icon: ListTodo, tone: 'info', route: 'ActionPlanTab' },
       ],
       recentIncidents: asArray(data.recent?.incidents),
       trend: data.monthlyTrend || [],
@@ -96,7 +96,13 @@ export default function DashboardScreen({ navigation }) {
         <DashboardHero
           user={user}
           subtitle={subtitle}
-          badge={portal.isEmployee && user?.employeeId ? `ID ${user.employeeId}` : null}
+          badge={
+            portal.isEmployee && user?.employeeId
+              ? `ID ${user.employeeId}`
+              : portal.isDept && user?.department?.departmentCode
+              ? `CODE ${user.department.departmentCode}`
+              : null
+          }
           role={portal.isEmployee ? 'Employee' : portal.isDept ? 'Department' : portal.label}
           onBellPress={goNotifications}
           onProfilePress={goProfile}
@@ -107,13 +113,18 @@ export default function DashboardScreen({ navigation }) {
           {loading && !data ? (
             <View style={styles.kpiGrid}>
               {[0, 1, 2, 3].map((i) => (
-                <Skeleton key={i} width="48%" height={120} radius={20} style={{ marginBottom: 12 }} />
+                <Skeleton key={i} width="48%" height={92} radius={20} style={{ marginBottom: 12 }} />
               ))}
             </View>
           ) : (
             <View style={styles.kpiGrid}>
-              {view.kpis.map((k) => (
-                <KpiCard key={k.label} {...k} style={styles.kpi} />
+              {view.kpis.map(({ route, ...k }) => (
+                <KpiCard
+                  key={k.label}
+                  {...k}
+                  style={styles.kpi}
+                  onPress={route ? () => navigation.navigate(route) : undefined}
+                />
               ))}
             </View>
           )}

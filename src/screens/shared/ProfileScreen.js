@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Constants from 'expo-constants';
 import {
   Mail, Phone, IdCard, Building2, Settings as SettingsIcon, LogOut, Camera, ChevronRight, Pencil, Briefcase,
-  GitBranch, Sun, Moon, Smartphone, Palette,
+  GitBranch, Sun, Moon, Smartphone, Palette, Bell,
 } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAccents } from '../../theme/accent';
@@ -126,14 +126,14 @@ export default function ProfileScreen({ navigation }) {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Card style={styles.headerCard}>
           <Pressable onPress={editing ? pickImage : undefined} style={styles.avatarWrap}>
-            <Avatar uri={avatarUri} name={fullName(user)} size={88} />
+            <Avatar uri={avatarUri} name={fullName(user)} size={72} />
             {editing ? (
               <View style={[styles.cameraBadge, { backgroundColor: colors.primary, borderColor: colors.card }]}>
                 <Camera size={14} color="#fff" />
               </View>
             ) : null}
           </Pressable>
-          <Text variant="h2" style={{ marginTop: 14 }}>{fullName(user)}</Text>
+          <Text variant="h3" style={{ marginTop: 10 }}>{fullName(user)}</Text>
           <View style={styles.badgeRow}>
             <Badge label={user?.primaryRole || 'User'} />
             {user?.employeeId ? (
@@ -197,8 +197,8 @@ export default function ProfileScreen({ navigation }) {
                     },
                   ]}
                 >
-                  <Icon size={20} color={active ? accent : colors.textMuted} />
-                  <Text variant="small" style={{ marginTop: 6, color: active ? accent : colors.textMuted, fontWeight: active ? '700' : '500' }}>
+                  <Icon size={18} color={active ? accent : colors.textMuted} />
+                  <Text variant="caption" style={{ marginTop: 4, color: active ? accent : colors.textMuted, fontWeight: active ? '700' : '500' }}>
                     {opt.label}
                   </Text>
                 </Pressable>
@@ -210,6 +210,7 @@ export default function ProfileScreen({ navigation }) {
         <Card style={styles.section} padded={false}>
           <View style={styles.menuPad}>
             <MenuRow icon={GitBranch} label="Company Workflow" onPress={() => navigation.navigate('Workflow')} />
+            <MenuRow icon={Bell} label="Notifications" onPress={() => navigation.navigate('Notifications')} />
             <MenuRow icon={SettingsIcon} label="Settings" onPress={() => navigation.navigate('Settings')} last />
           </View>
         </Card>
@@ -243,10 +244,10 @@ export default function ProfileScreen({ navigation }) {
 function InfoRow({ icon: Icon, label, value, colors, last }) {
   return (
     <View style={[styles.infoRow, !last && { borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth }]}>
-      <Icon size={18} color={colors.textMuted} />
-      <View style={{ flex: 1, marginLeft: 12 }}>
+      <Icon size={16} color={colors.textMuted} />
+      <View style={{ flex: 1, marginLeft: 10 }}>
         <Text variant="caption" color="textMuted">{label}</Text>
-        <Text variant="body" style={{ marginTop: 2 }} numberOfLines={1}>{value}</Text>
+        <Text variant="small" style={{ marginTop: 1 }} numberOfLines={1}>{value}</Text>
       </View>
     </View>
   );
@@ -254,7 +255,7 @@ function InfoRow({ icon: Icon, label, value, colors, last }) {
 
 const styles = StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 40 },
-  headerCard: { alignItems: 'center', paddingVertical: 24 },
+  headerCard: { alignItems: 'center', paddingVertical: 16 },
   badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
   codeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
@@ -266,8 +267,8 @@ const styles = StyleSheet.create({
   section: { marginTop: 16 },
   themeHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
   themeRow: { flexDirection: 'row', gap: 10 },
-  themeOption: { flex: 1, alignItems: 'center', paddingVertical: 14, borderRadius: 14, borderWidth: 1.5 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14 },
+  themeOption: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 12, borderWidth: 1.5 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
   menuPad: { paddingHorizontal: 16 },
   menuRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 15 },
   menuIcon: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginRight: 12 },

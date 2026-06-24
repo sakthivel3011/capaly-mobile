@@ -65,6 +65,9 @@ function WorkflowStack() {
       {/* Tapping an incident in the workflow list opens its details. */}
       <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
       <Stack.Screen name="ReportModule" component={ReportModuleScreen} />
+      {/* Forwarding must live in this stack too, otherwise navigating to it from
+          an incident opened in the Workflow tab jumps to another tab. */}
+      <Stack.Screen name="ForwardIncident" component={ForwardIncidentScreen} />
     </Stack.Navigator>
   );
 }

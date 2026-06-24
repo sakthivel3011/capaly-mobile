@@ -80,7 +80,7 @@ export default function SettingsScreen({ navigation }) {
               <View style={{ flex: 1 }}>
                 <Text variant="body">CAPALY Mobile</Text>
                 <Text variant="caption" color="textMuted" style={{ marginTop: 2 }}>
-                  Safety • Compliance • CAPA • Inspections · v{appVersion}
+                  v{appVersion}
                 </Text>
               </View>
             </Pressable>
